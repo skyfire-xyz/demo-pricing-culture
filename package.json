@@ -1,6 +1,6 @@
 {
-  "name": "next-template",
-  "version": "0.0.2",
+  "name": "pricing culture",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,8 +15,12 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
+    "@skyfire-xyz/skyfire-sdk": "^0.7.0",
+    "@types/lodash": "^4.17.7",
+    "axios": "^1.7.7",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
+    "lodash": "^4.17.21",
     "lucide-react": "0.105.0-alpha.4",
     "next": "^13.4.8",
     "next-themes": "^0.2.1",
