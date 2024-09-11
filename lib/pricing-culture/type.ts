@@ -1,16 +1,16 @@
 // Response type for /api/data/dailycomps
 
-interface MarketCompParams {
+export interface MarketCompParams {
   pc_tag: string
-  min_price: number
-  max_price: number
+  min_price: number | null
+  max_price: number | null
   platform_ids: number[]
   trim_percent: number
-  img_url: string
+  img_url?: string
   image_url?: string | null
 }
 
-interface MarketCompAttributes {
+export interface MarketCompAttributes {
   id: boolean
   market_comp_id: boolean
   event_time: boolean
@@ -36,7 +36,7 @@ export interface MarketCompObject {
   available_for_buyer: boolean
   last_run_on: string
   publish: boolean
-  comparable_idx: string
+  comparable_idx: string | null
   tags: null
   alias_id: null
 }

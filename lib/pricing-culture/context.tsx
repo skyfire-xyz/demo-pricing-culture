@@ -1,6 +1,7 @@
-// src/contexts/PricingCultureContext.tsx
+"use client"
 
 import React, { createContext, useContext, useEffect, useState } from "react"
+import axios from "axios"
 
 import { MarketCompObject } from "./type"
 
@@ -24,9 +25,10 @@ export const PricingCultureProvider: React.FC<{
   useEffect(() => {
     const fetchMarketComps = async () => {
       try {
-        const response = await fetch("your-api-endpoint")
-        const data = await response.json()
-        setMarketComps(data.objects)
+        const response = await axios.get(
+          "https://dataservices.pricingculture.com/api/data/dailycomps"
+        )
+        setMarketComps(response.data.objects)
         setLoading(false)
       } catch (err) {
         setError("Failed to fetch market comps")
