@@ -9,6 +9,8 @@ interface PricingCultureContextType {
   marketComps: MarketCompObject[]
   loading: boolean
   error: string | null
+  selectedComp: MarketCompObject | null
+  fetchCompDetails: (id: string) => Promise<void>
 }
 
 const PricingCultureContext = createContext<
@@ -21,6 +23,9 @@ export const PricingCultureProvider: React.FC<{
   const [marketComps, setMarketComps] = useState<MarketCompObject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedComp, setSelectedComp] = useState<MarketCompObject | null>(
+    null
+  )
 
   useEffect(() => {
     const fetchMarketComps = async () => {
@@ -35,12 +40,28 @@ export const PricingCultureProvider: React.FC<{
         setLoading(false)
       }
     }
-
     fetchMarketComps()
   }, [])
 
+  const fetchCompDetails = async (id: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await axios.get(
+        `https://dataservices.pricingculture.com/api/data/comp/${id}`
+      )
+      setSelectedComp(response.data)
+      setLoading(false)
+    } catch (err) {
+      setError("Failed to fetch comp details")
+      setLoading(false)
+    }
+  }
+
   return (
-    <PricingCultureContext.Provider value={{ marketComps, loading, error }}>
+    <PricingCultureContext.Provider
+      value={{ marketComps, loading, error, selectedComp, fetchCompDetails }}
+    >
       {children}
     </PricingCultureContext.Provider>
   )
@@ -54,4 +75,18 @@ export const usePricingCulture = () => {
     )
   }
   return context
+}
+
+export const useSelectedComp = (id: number) => {
+  const { selectedComp, fetchCompDetails } = usePricingCulture()
+
+  useEffect(() => {
+    if (id) {
+      fetchCompDetails(id.toString())
+    }
+  }, [id])
+
+  // return marketComps.find((comp) => comp.id === id);
+
+  return selectedComp
 }

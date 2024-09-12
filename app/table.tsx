@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -18,11 +19,11 @@ import { ChevronDown, MoreHorizontal } from "lucide-react"
 import { usePricingCulture } from "@/lib/pricing-culture/context"
 import { MarketCompObject, MarketCompParams } from "@/lib/pricing-culture/type"
 import { Button } from "@/components/ui/button"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -95,35 +96,35 @@ export const columns: ColumnDef<MarketCompObject>[] = [
       <div className="capitalize">{row.getValue("available")}</div>
     ),
   },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original
+  // {
+  //   id: "actions",
+  //   enableHiding: false,
+  //   cell: ({ row }) => {
+  //     const payment = row.original
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            {/* <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem> */}
-            <DropdownMenuSeparator />
-            {/* <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem> */}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
+  //     return (
+  //       <DropdownMenu>
+  //         <DropdownMenuTrigger asChild>
+  //           <Button variant="ghost" className="h-8 w-8 p-0">
+  //             <span className="sr-only">Open menu</span>
+  //             <MoreHorizontal className="h-4 w-4" />
+  //           </Button>
+  //         </DropdownMenuTrigger>
+  //         <DropdownMenuContent align="end">
+  //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+  //           {/* <DropdownMenuItem
+  //             onClick={() => navigator.clipboard.writeText(payment.id)}
+  //           >
+  //             Copy payment ID
+  //           </DropdownMenuItem> */}
+  //           <DropdownMenuSeparator />
+  //           {/* <DropdownMenuItem>View customer</DropdownMenuItem>
+  //           <DropdownMenuItem>View payment details</DropdownMenuItem> */}
+  //         </DropdownMenuContent>
+  //       </DropdownMenu>
+  //     )
+  //   },
+  // },
 ]
 
 export function DataTable() {
@@ -134,7 +135,7 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-
+  const [selectComp, setSelectComp] = React.useState<number | undefined>()
   const { marketComps } = usePricingCulture()
 
   const table = useReactTable({
@@ -157,16 +158,28 @@ export function DataTable() {
     },
   })
 
+  const routetr = useRouter()
+
   return (
     <div className="w-full">
+      <DateRangePicker
+        onUpdate={(values) => console.log(values)}
+        align="start"
+        locale="en-GB"
+        showCompare={false}
+        selectedComp={selectComp}
+        onClose={() => setSelectComp(undefined)}
+        onSelect={(range) => {
+          routetr.push(
+            `/detail/id?from=${range.from?.toDateString()}&to=${range.to?.toDateString()}`
+          )
+        }}
+      />
       <div className="flex items-center py-4">
         <Input
           placeholder="Search"
           value={table.getState().globalFilter ?? ""}
-          onChange={
-            (event) => table.setGlobalFilter(event.target.value)
-            // table.getColumn("email")?.setFilterValue(event.target.value)
-          }
+          onChange={(event) => table.setGlobalFilter(event.target.value)}
           className="max-w-sm"
         />
         <DropdownMenu>
@@ -223,7 +236,7 @@ export function DataTable() {
                   className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => console.log("Row 1 clicked")}
+                  onClick={() => setSelectComp(row.original.id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
