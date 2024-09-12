@@ -33,11 +33,13 @@ export default function DetailPage(props: {
   const { params, searchParams } = props
   const [tab, setTab] = useState("0")
 
-  const data = useSelectedComp({
+  const { data, meta } = useSelectedComp({
     id: params.id,
     from: searchParams.from,
     to: searchParams.to,
   })
+
+  console.log(meta, "meta")
 
   if (data) {
     return (
@@ -48,67 +50,74 @@ export default function DetailPage(props: {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
+            <BreadcrumbItem>{meta.name}</BreadcrumbItem>
+            <BreadcrumbSeparator />
             <BreadcrumbItem>
-              {params.id} | from {searchParams.from} to {searchParams.to}
+              {searchParams.from} ~ {searchParams.to}
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div>
-          <MinMaxChart
-            from={searchParams.from}
-            to={searchParams.to}
-            data={data}
-          />
+        <div className="mt-8">
+          <div className="flex gap-4 items-center ">
+            {meta.params.img_url && (
+              <div className="capitalize bg-gradient p-4 rounded-lg">
+                <img
+                  src={meta.params.img_url}
+                  className="h-[50px] w-[100px] object-contain"
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-4xl">{meta.name}</h1>
+              <p className="mt-4 text-2l">{meta.description}</p>
+            </div>
+          </div>
         </div>
+        {data.length > 1 && (
+          <div className="mt-4">
+            <MinMaxChart
+              from={searchParams.from}
+              to={searchParams.to}
+              data={data}
+            />
+          </div>
+        )}
 
-        <Tabs value={tab} className="w-full mt-6 h-auto bg-transparent">
-          <Select value={tab} onValueChange={(index) => setTab(`${index}`)}>
-            <SelectTrigger className="w-[300px]">
-              <SelectValue placeholder="Select a Event Time" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Event Time</SelectLabel>
-                {data.map((asset, index) => (
-                  <SelectItem value={`${index}`}>{asset.event_time}</SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        <Tabs value={tab} className="w-full mt-8 h-auto bg-transparent">
+          <div className="flex gap-4 items-center">
+            <Select value={tab} onValueChange={(index) => setTab(`${index}`)}>
+              <SelectTrigger className="w-[300px]">
+                <SelectValue placeholder="Select a Event Time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Event Time</SelectLabel>
+                  {data.map((asset, index) => (
+                    <SelectItem value={`${index}`}>
+                      {asset.event_time}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           {data.map((asset, index) => (
             <TabsContent value={`${index}`}>
               <Card>
-                <CardHeader>
-                  <div className="grid grid-cols-3 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Min Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_min}</CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Max Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_max}</CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Average Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_average}</CardContent>
-                    </Card>
-                  </div>
-                </CardHeader>
                 <CardContent>
+                  <Chart
+                    prices={asset.prices}
+                    max={asset.value_max}
+                    min={asset.value_min}
+                  />
                   <div className="grid grid-cols-2 gap-6 mt-8">
                     <div>
-                      Cheapest item of the day
+                      Min price item of the day
                       <Asset asset={asset.value_min_asset} />
                     </div>
                     <div className="">
-                      Most expensive item of the day
+                      Max price item of the day
                       <Asset asset={asset.value_max_asset} />
                     </div>
                   </div>

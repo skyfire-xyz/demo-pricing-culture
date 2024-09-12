@@ -88,7 +88,7 @@ export const useSelectedComp = ({
   from: string
   to: string
 }) => {
-  const { selectedComp, fetchCompDetails } = usePricingCulture()
+  const { marketComps, selectedComp, fetchCompDetails } = usePricingCulture()
 
   useEffect(() => {
     if (id) {
@@ -96,5 +96,11 @@ export const useSelectedComp = ({
     }
   }, [id])
 
-  return selectedComp
+  const selectedCompDetail =
+    id && marketComps.find((comp) => comp.id == Number(id))
+
+  return {
+    meta: selectedCompDetail,
+    data: selectedComp,
+  }
 }

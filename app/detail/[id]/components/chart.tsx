@@ -1,7 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 import {
   Card,
@@ -20,8 +28,8 @@ import {
 export const description = "An interactive bar chart"
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  price: {
+    label: "Price",
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig
@@ -35,10 +43,10 @@ export default function Chart({ prices, max, min }: ChartProps) {
   const chartData = prices.map((price, index) => ({ price: Number(price) }))
 
   return (
-    <Card>
+    <Card className="mt-6">
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Price Range</CardTitle>
+          <CardTitle>Prices</CardTitle>
           <CardDescription></CardDescription>
         </div>
         <div className="flex">
@@ -61,7 +69,7 @@ export default function Chart({ prices, max, min }: ChartProps) {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <LineChart
+          <BarChart
             accessibilityLayer
             data={chartData}
             margin={{
@@ -69,12 +77,11 @@ export default function Chart({ prices, max, min }: ChartProps) {
               right: 12,
             }}
           >
-            <Line
+            <Bar
               dataKey="price"
               type="natural"
-              stroke="var(--color-desktop)"
+              stroke="var(--color-price)"
               strokeWidth={4}
-              dot={false}
             />
             <CartesianGrid vertical={false} />
             <ChartTooltip
@@ -82,7 +89,7 @@ export default function Chart({ prices, max, min }: ChartProps) {
               content={<ChartTooltipContent hideLabel />}
             />
             <YAxis type="number" domain={["dataMin", "dataMax"]} />
-          </LineChart>
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
