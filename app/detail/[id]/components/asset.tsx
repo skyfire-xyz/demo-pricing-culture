@@ -33,18 +33,19 @@ export default function Asset({ asset }: AssetProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{asset.name}</CardTitle>
+        <CardTitle>
+          <Link
+            href={asset.url}
+            target="_blank"
+            className="flex gap-4 hover:underline items-center"
+          >
+            {asset.name}
+            <Link1Icon className="mr-2 h-4 w-4" />
+          </Link>
+        </CardTitle>
         <CardDescription>{asset.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ul>
-          <li className="flex">
-            <Link1Icon className="mr-2 h-4 w-4" />
-            <Link className="text-sm" href={asset.url} target="_blank">
-              {asset.platform}
-            </Link>
-          </li>
-        </ul>
         <Carousel className="w-[85%] mx-auto">
           <CarouselContent>
             {asset.media.map((url: string, index: number) => (
