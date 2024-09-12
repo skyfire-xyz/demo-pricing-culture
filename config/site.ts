@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
-  name: "Skyfire - Pricing Culture Demo",
+  name: "Skyfire - Micro1 Demo",
   description: "",
   mainNav: [
     {
