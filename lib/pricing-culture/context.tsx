@@ -10,7 +10,7 @@ interface PricingCultureContextType {
   loading: boolean
   error: string | null
   selectedComp: MarketCompObject | null
-  fetchCompDetails: (id: string) => Promise<void>
+  fetchCompDetails: (id: string, from: string, to: string) => Promise<void>
 }
 
 const PricingCultureContext = createContext<
@@ -30,9 +30,10 @@ export const PricingCultureProvider: React.FC<{
   useEffect(() => {
     const fetchMarketComps = async () => {
       try {
-        const response = await axios.get(
-          "https://dataservices.pricingculture.com/api/data/dailycomps"
-        )
+        const response = await axios.post(`/api/skyfire-api`, {
+          method: "GET",
+          path: `proxy/pricing-culture/api/data/dailycomps`,
+        })
         setMarketComps(response.data.objects)
         setLoading(false)
       } catch (err) {
@@ -43,14 +44,15 @@ export const PricingCultureProvider: React.FC<{
     fetchMarketComps()
   }, [])
 
-  const fetchCompDetails = async (id: string) => {
+  const fetchCompDetails = async (id: string, from: string, to: string) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await axios.get(
-        `https://dataservices.pricingculture.com/api/data/comp/${id}`
-      )
-      setSelectedComp(response.data)
+      const response = await axios.post(`/api/skyfire-api`, {
+        method: "GET",
+        path: `proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`,
+      })
+      setSelectedComp(response.data.objects)
       setLoading(false)
     } catch (err) {
       setError("Failed to fetch comp details")
@@ -77,16 +79,22 @@ export const usePricingCulture = () => {
   return context
 }
 
-export const useSelectedComp = (id: number) => {
+export const useSelectedComp = ({
+  id,
+  from,
+  to,
+}: {
+  id: string
+  from: string
+  to: string
+}) => {
   const { selectedComp, fetchCompDetails } = usePricingCulture()
 
   useEffect(() => {
     if (id) {
-      fetchCompDetails(id.toString())
+      fetchCompDetails(id, from, to)
     }
   }, [id])
-
-  // return marketComps.find((comp) => comp.id === id);
 
   return selectedComp
 }

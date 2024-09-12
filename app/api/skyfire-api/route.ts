@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   if (!process.env.SKYFIRE_API_KEY) {
     return Response.json({ message: "Missing API Key" }, { status: 401 })
   }
-  if (!process.env.SKYFIRE_ENDPOINT_URL) {
+  if (!process.env.SKYFIRE_API_BASE_URL) {
     return Response.json(
       { message: "Missing Skyfire API URL" },
       { status: 401 }
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
   // Call the BE API directly
   const apiResponse = await fetch(
-    `${process.env.SKYFIRE_ENDPOINT_URL}/${path}`,
+    `${process.env.SKYFIRE_API_BASE_URL}/${path}`,
     {
       method: method,
       headers: {
