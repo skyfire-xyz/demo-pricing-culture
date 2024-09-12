@@ -26,6 +26,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
+import Chart from "./chart"
+
 interface AssetProps {
   asset: AssetInfo
 }

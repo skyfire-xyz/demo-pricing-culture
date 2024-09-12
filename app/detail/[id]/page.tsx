@@ -74,13 +74,15 @@ export default function DetailPage(props: {
             </div>
           </div>
         </div>
-        <div className="mt-4">
-          <MinMaxChart
-            from={searchParams.from}
-            to={searchParams.to}
-            data={data}
-          />
-        </div>
+        {data.length > 1 && (
+          <div className="mt-4">
+            <MinMaxChart
+              from={searchParams.from}
+              to={searchParams.to}
+              data={data}
+            />
+          </div>
+        )}
 
         <Tabs value={tab} className="w-full mt-8 h-auto bg-transparent">
           <div className="flex gap-4 items-center">
@@ -103,29 +105,12 @@ export default function DetailPage(props: {
           {data.map((asset, index) => (
             <TabsContent value={`${index}`}>
               <Card>
-                <CardHeader>
-                  <div className="grid grid-cols-3 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Min Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_min}</CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Max Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_max}</CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Average Price</CardTitle>
-                      </CardHeader>
-                      <CardContent>{asset.value_average}</CardContent>
-                    </Card>
-                  </div>
-                </CardHeader>
                 <CardContent>
+                  <Chart
+                    prices={asset.prices}
+                    max={asset.value_max}
+                    min={asset.value_min}
+                  />
                   <div className="grid grid-cols-2 gap-6 mt-8">
                     <div>
                       Min price item of the day
