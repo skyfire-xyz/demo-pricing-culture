@@ -48,7 +48,7 @@ interface MarketCompResponse {
 
 // Response type for /api/data/dailycomps
 
-interface AssetInfo {
+export interface AssetInfo {
   id: number
   media: string[]
   name: string
