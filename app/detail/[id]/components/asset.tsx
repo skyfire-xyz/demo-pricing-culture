@@ -1,3 +1,14 @@
+import Link from "next/link"
+import {
+  CalendarIcon,
+  EnvelopeClosedIcon,
+  FaceIcon,
+  GearIcon,
+  Link1Icon,
+  PersonIcon,
+  RocketIcon,
+} from "@radix-ui/react-icons"
+
 import { AssetInfo } from "@/lib/pricing-culture/type"
 import {
   Card,
@@ -26,6 +37,14 @@ export default function Asset({ asset }: AssetProps) {
         <CardDescription>{asset.description}</CardDescription>
       </CardHeader>
       <CardContent>
+        <ul>
+          <li className="flex">
+            <Link1Icon className="mr-2 h-4 w-4" />
+            <Link className="text-sm" href={asset.url} target="_blank">
+              {asset.platform}
+            </Link>
+          </li>
+        </ul>
         <Carousel className="w-[85%] mx-auto">
           <CarouselContent>
             {asset.media.map((url: string, index: number) => (

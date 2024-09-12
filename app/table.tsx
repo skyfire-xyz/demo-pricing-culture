@@ -134,7 +134,6 @@ export function DataTable() {
   return (
     <div className="w-full">
       <DateRangePicker
-        onUpdate={(values) => console.log(values)}
         align="start"
         locale="en-GB"
         showCompare={false}
