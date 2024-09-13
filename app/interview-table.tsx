@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -14,18 +13,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 
-import { usePricingCulture } from "@/lib/pricing-culture/context"
-import { MarketCompObject, MarketCompParams } from "@/lib/pricing-culture/type"
 import { Button } from "@/components/ui/button"
-import { DateRangePicker } from "@/components/ui/date-range-picker"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -38,67 +32,43 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export const columns: ColumnDef<MarketCompObject>[] = [
-  {
-    id: "params",
-    accessorKey: "params",
-    header: "",
-    cell: ({ row }) => {
-      const params = row.getValue("params") as MarketCompParams
+import { useMicro1 } from "../lib/micro1/context"
+import { InterviewItem } from "../lib/micro1/type"
 
-      return (
-        <div className="capitalize bg-gradient p-4 rounded-lg">
-          {params.img_url ? (
-            <img
-              src={params.img_url}
-              className="h-[50px] w-[100px] object-contain"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-[50px] text-black">
-              No Image
-            </div>
-          )}
-        </div>
-      )
-    },
+export const columns: ColumnDef<InterviewItem>[] = [
+  {
+    id: "interview_id",
+    accessorKey: "interview_id",
+    header: "ID",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("interview_id")}</div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    id: "name",
-    accessorKey: "name",
+    id: "interview_name",
+    accessorKey: "interview_name",
     header: "Name",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("interview_name")}</div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "description",
-    header: "Description",
+    id: "status",
+    accessorKey: "status",
+    header: "Status",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("description")}</div>
+      <div className="capitalize">{row.getValue("status")}</div>
     ),
-  },
-  {
-    id: "price_range",
-    accessorFn: (row) =>
-      `${row.params.min_price || "NaN"} - ${row.params.max_price || "NaN"}`,
-    header: "Price Range",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("price_range")}</div>
-    ),
-  },
-  {
-    id: "available",
-    accessorFn: (row) => (row.available_for_buyer ? "Yes" : "No"),
-    header: "Availability",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("available")}</div>
-    ),
+    enableSorting: false,
+    enableHiding: false,
   },
 ]
 
-export function DataTable() {
+export function InterviewTable() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -106,11 +76,10 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [selectComp, setSelectComp] = React.useState<number | undefined>()
-  const { marketComps } = usePricingCulture()
+  const { interviewList } = useMicro1()
 
   const table = useReactTable({
-    data: marketComps,
+    data: interviewList,
     columns,
     enableRowSelection: true,
     onSortingChange: setSorting,
@@ -129,24 +98,8 @@ export function DataTable() {
     },
   })
 
-  const routetr = useRouter()
-
   return (
     <div className="w-full">
-      <DateRangePicker
-        align="start"
-        locale="en-GB"
-        showCompare={false}
-        selectedComp={selectComp}
-        onClose={() => setSelectComp(undefined)}
-        onSelect={(range) => {
-          routetr.push(
-            `/detail/${selectComp}?from=${
-              range.from?.toISOString().split("T")[0]
-            }&to=${range.to?.toISOString().split("T")[0]}`
-          )
-        }}
-      />
       <div className="flex items-center py-4">
         <Input
           placeholder="Search"
@@ -157,7 +110,7 @@ export function DataTable() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              Columns <ChevronDown className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -208,7 +161,6 @@ export function DataTable() {
                   className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => setSelectComp(row.original.id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

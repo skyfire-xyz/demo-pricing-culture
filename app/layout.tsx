@@ -3,11 +3,12 @@ import { Metadata } from "next"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
-import { PricingCultureProvider } from "@/lib/pricing-culture/context"
 import { cn } from "@/lib/utils"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
+
+import { Micro1Provider } from "../lib/micro1/context"
 
 export const metadata: Metadata = {
   title: {
@@ -42,13 +43,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <PricingCultureProvider>
+            <Micro1Provider>
               <div className="relative flex min-h-screen flex-col">
                 <SiteHeader />
                 <div className="flex-1">{children}</div>
               </div>
               <TailwindIndicator />
-            </PricingCultureProvider>
+            </Micro1Provider>
           </ThemeProvider>
         </body>
       </html>

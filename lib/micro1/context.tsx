@@ -3,14 +3,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import axios from "axios"
 
-import { InterviewItem } from "./type"
+import { InterviewItem, InterviewReport } from "./type"
 
 interface Micro1ContextType {
   interviewList: InterviewItem[]
+  reportList: InterviewReport[]
   loading: boolean
   error: string | null
   selectedComp: InterviewItem | null
-  fetchCompDetails: (id: string, from: string, to: string) => Promise<void>
 }
 
 const Micro1Context = createContext<Micro1ContextType | undefined>(undefined)
@@ -22,81 +22,79 @@ export const Micro1Provider: React.FC<{
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedComp, setSelectedComp] = useState<InterviewItem | null>(null)
+  const [reportList, setReportList] = useState<InterviewReport[]>([])
 
   useEffect(() => {
-    const fetchMarketComps = async () => {
+    const fetchInterviews = async () => {
       try {
         const response = await axios.post(`/api/skyfire-api`, {
           method: "GET",
-          path: `proxy/pricing-culture/api/data/dailycomps`,
+          path: `proxy/micro1/interviews`,
         })
-        setInterviewList(response.data.objects)
+        setInterviewList(response.data.data)
         setLoading(false)
       } catch (err) {
         setError("Failed to fetch market comps")
         setLoading(false)
       }
     }
-    fetchMarketComps()
+
+    const fetchInterviewReports = async () => {
+      try {
+        const response = await axios.post(`/api/skyfire-api`, {
+          method: "GET",
+          path: `proxy/micro1/interview/reports`,
+        })
+        setReportList(response.data.data)
+        setLoading(false)
+      } catch (err) {
+        setError("Failed to fetch market comps")
+        setLoading(false)
+      }
+    }
+    fetchInterviews()
+    fetchInterviewReports()
   }, [])
 
-  const fetchCompDetails = async (id: string, from: string, to: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await axios.post(`/api/skyfire-api`, {
-        method: "GET",
-        path: `proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`,
-      })
-      setSelectedComp(response.data.objects)
-      setLoading(false)
-    } catch (err) {
-      setError("Failed to fetch comp details")
-      setLoading(false)
-    }
-  }
-
   return (
-    <PricingCultureContext.Provider
+    <Micro1Context.Provider
       value={{
-        marketComps: interviewList,
+        interviewList,
         loading,
         error,
         selectedComp,
-        fetchCompDetails,
+        reportList,
       }}
     >
       {children}
-    </PricingCultureContext.Provider>
+    </Micro1Context.Provider>
   )
 }
 
-export const usePricingCulture = () => {
-  const context = useContext(PricingCultureContext)
+export const useMicro1 = () => {
+  const context = useContext(Micro1Context)
   if (context === undefined) {
-    throw new Error(
-      "usePricingCulture must be used within a PricingCultureProvider"
-    )
+    throw new Error("useMicro1 must be used within a Micro1Provider")
   }
   return context
 }
 
-export const useSelectedComp = ({
-  id,
-  from,
-  to,
-}: {
-  id: string
-  from: string
-  to: string
-}) => {
-  const { selectedComp, fetchCompDetails } = usePricingCulture()
+// export const useSelectedComp = ({
+//   id,
+//   from,
+//   to,
+// }: {
+//   id: string
+//   from: string
+//   to: string
+// }) => {
+//   const { selectedComp, fetchCompDetails } = useMicro1()
 
-  useEffect(() => {
-    if (id) {
-      fetchCompDetails(id, from, to)
-    }
-  }, [id])
+//   useEffect(() => {
+//     if (id) {
+//       fetchCompDetails(id, from, to)
+//     }
+//   }, [id])
 
-  return selectedComp
-}
+//   return selectedComp
+// }
