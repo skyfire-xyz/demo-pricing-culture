@@ -23,16 +23,16 @@ export const description = "An interactive bar chart"
 const chartConfig = {
   average: {
     label: "Average",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--primary))",
   },
-  min: {
-    label: "Min Price",
-    color: "hsl(var(--chart-2))",
-  },
-  max: {
-    label: "Max Price",
-    color: "hsl(var(--chart-3))",
-  },
+  // min: {
+  //   label: "Min Price",
+  //   color: "hsl(var(--chart-2))",
+  // },
+  // max: {
+  //   label: "Max Price",
+  //   color: "hsl(var(--chart-3))",
+  // },
 } satisfies ChartConfig
 
 interface ChartProps {
@@ -55,20 +55,6 @@ export default function MinMaxChart({ data, from, to }: ChartProps) {
           </CardTitle>
           <CardDescription></CardDescription>
         </div>
-        {/* <div className="flex">
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">Min Price</span>
-            <span className="text-lg font-bold leading-none sm:text-3xl">
-              {min}
-            </span>
-          </div>
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">Max Price</span>
-            <span className="text-lg font-bold leading-none sm:text-3xl">
-              {max}
-            </span>
-          </div>
-        </div> */}
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
         <ChartContainer
@@ -88,7 +74,7 @@ export default function MinMaxChart({ data, from, to }: ChartProps) {
               type="natural"
               stroke="var(--color-average)"
               strokeWidth={4}
-              dot={false}
+              dot={{ stroke: "", strokeWidth: 1, r: 4, strokeDasharray: "" }}
             />
             <CartesianGrid vertical={false} />
             <ChartTooltip
@@ -96,7 +82,10 @@ export default function MinMaxChart({ data, from, to }: ChartProps) {
               content={<ChartTooltipContent hideLabel />}
             />
             <YAxis
-              domain={["dataMin", "dataMax"]}
+              domain={[
+                (dataMin: number) => dataMin - dataMin * 0.05,
+                (dataMax: number) => dataMax + dataMax * 0.05,
+              ]}
               tickFormatter={(value) => Math.floor(value)}
             />
             <XAxis

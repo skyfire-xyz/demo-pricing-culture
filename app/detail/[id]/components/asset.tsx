@@ -10,6 +10,8 @@ import {
 } from "@radix-ui/react-icons"
 
 import { AssetInfo } from "@/lib/pricing-culture/type"
+import { formatPrice } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -30,10 +32,11 @@ import Chart from "./chart"
 
 interface AssetProps {
   asset: AssetInfo
+  price: number
 }
-export default function Asset({ asset }: AssetProps) {
+export default function Asset({ asset, price }: AssetProps) {
   return (
-    <Card className="w-full">
+    <Card className="w-full h-[calc(100%-1.5rem)] flex flex-col">
       <CardHeader>
         <CardTitle>
           <Link
@@ -45,20 +48,27 @@ export default function Asset({ asset }: AssetProps) {
             <Link1Icon className="mr-2 h-4 w-4" />
           </Link>
         </CardTitle>
-        <CardDescription>{asset.description}</CardDescription>
+        <CardDescription className="text-xl font-bold">
+          {formatPrice(price)}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Carousel className="w-[85%] mx-auto">
-          <CarouselContent>
-            {asset.media.map((url: string, index: number) => (
-              <CarouselItem key={index} className="basis-1/3">
-                <img src={url} alt={url} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+      <CardContent className="flex-1 flex flex-col">
+        <div className="flex-1 pb-4">
+          <CardDescription>{asset.description}</CardDescription>
+        </div>
+        <div className="mt-auto">
+          <Carousel className="w-[85%] mx-auto">
+            <CarouselContent>
+              {asset.media.map((url: string, index: number) => (
+                <CarouselItem key={index} className="basis-1/3">
+                  <img src={url} alt={url} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
       </CardContent>
       <CardFooter className="flex justify-between"></CardFooter>
     </Card>

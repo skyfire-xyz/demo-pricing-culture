@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { useSelectedComp } from "@/lib/pricing-culture/context"
+import { Badge } from "@/components/ui/badge"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,8 +39,6 @@ export default function DetailPage(props: {
     from: searchParams.from,
     to: searchParams.to,
   })
-
-  console.log(meta, "meta")
 
   if (data) {
     return (
@@ -107,18 +106,27 @@ export default function DetailPage(props: {
               <Card>
                 <CardContent>
                   <Chart
+                    numItems={asset.number_of_constituents}
                     prices={asset.prices}
                     max={asset.value_max}
                     min={asset.value_min}
                   />
-                  <div className="grid grid-cols-2 gap-6 mt-8">
-                    <div>
-                      Min price item of the day
-                      <Asset asset={asset.value_min_asset} />
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <div className="h-full">
+                      <p className="font-bold mb-1">
+                        Min price item of the day
+                      </p>
+                      <Asset
+                        asset={asset.value_min_asset}
+                        price={asset.value_min}
+                      />
                     </div>
-                    <div className="">
-                      Max price item of the day
-                      <Asset asset={asset.value_max_asset} />
+                    <div className="h-full">
+                      <p className="font-bold mb-1">Max Price Of The Day</p>
+                      <Asset
+                        asset={asset.value_max_asset}
+                        price={asset.value_max}
+                      />
                     </div>
                   </div>
                 </CardContent>

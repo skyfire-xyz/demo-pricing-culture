@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts"
 
+import { formatPrice } from "@/lib/utils"
 import {
   Card,
   CardContent,
@@ -30,7 +31,7 @@ export const description = "An interactive bar chart"
 const chartConfig = {
   price: {
     label: "Price",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig
 
@@ -38,8 +39,9 @@ interface ChartProps {
   prices: number[]
   max: number
   min: number
+  numItems: number
 }
-export default function Chart({ prices, max, min }: ChartProps) {
+export default function Chart({ prices, max, min, numItems }: ChartProps) {
   const chartData = prices.map((price, index) => ({ price: Number(price) }))
 
   return (
@@ -51,15 +53,23 @@ export default function Chart({ prices, max, min }: ChartProps) {
         </div>
         <div className="flex">
           <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+            <span className="text-xs text-muted-foreground">
+              Number of Items
+            </span>
+            <span className="text-lg font-bold leading-none sm:text-3xl">
+              {numItems}
+            </span>
+          </div>
+          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
             <span className="text-xs text-muted-foreground">Min Price</span>
             <span className="text-lg font-bold leading-none sm:text-3xl">
-              {min}
+              {formatPrice(min)}
             </span>
           </div>
           <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
             <span className="text-xs text-muted-foreground">Max Price</span>
             <span className="text-lg font-bold leading-none sm:text-3xl">
-              {max}
+              {formatPrice(max)}
             </span>
           </div>
         </div>
@@ -77,12 +87,7 @@ export default function Chart({ prices, max, min }: ChartProps) {
               right: 12,
             }}
           >
-            <Bar
-              dataKey="price"
-              type="natural"
-              stroke="var(--color-price)"
-              strokeWidth={4}
-            />
+            <Bar dataKey="price" type="natural" fill="var(--color-price)" />
             <CartesianGrid vertical={false} />
             <ChartTooltip
               cursor={false}
