@@ -14,6 +14,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -25,6 +26,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.1",
     "@skyfire-xyz/skyfire-sdk": "^0.7.0",
     "@tanstack/react-table": "^8.20.5",
     "@types/lodash": "^4.17.7",
@@ -33,6 +35,7 @@
     "clsx": "^1.2.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.2.1",
+    "framer-motion": "^11.5.4",
     "lodash": "^4.17.21",
     "lucide-react": "^0.441.0",
     "next": "^13.4.8",
@@ -40,10 +43,12 @@
     "react": "^18.2.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.53.0",
     "recharts": "^2.12.7",
     "sharp": "^0.31.3",
     "tailwind-merge": "^1.13.2",
-    "tailwindcss-animate": "^1.0.6"
+    "tailwindcss-animate": "^1.0.6",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^3.7.2",
