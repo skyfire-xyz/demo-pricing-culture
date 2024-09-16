@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { useSelectedComp } from "@/lib/pricing-culture/context"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +33,7 @@ export default function DetailPage(props: {
   searchParams: { from: string; to: string }
 }) {
   const { params, searchParams } = props
+  const router = useRouter()
   const [tab, setTab] = useState("0")
 
   const { data, meta } = useSelectedComp({
@@ -46,10 +48,17 @@ export default function DetailPage(props: {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink
+                className="cursor-pointer"
+                onClick={() => {
+                  router.push("/")
+                }}
+              >
+                Home
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>{meta.name}</BreadcrumbItem>
+            <BreadcrumbItem>{meta?.name}</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               {searchParams.from} ~ {searchParams.to}
@@ -59,7 +68,7 @@ export default function DetailPage(props: {
 
         <div className="mt-8">
           <div className="flex gap-4 items-center ">
-            {meta.params.img_url && (
+            {meta?.params.img_url && (
               <div className="capitalize bg-gradient p-4 rounded-lg">
                 <img
                   src={meta.params.img_url}
@@ -68,8 +77,8 @@ export default function DetailPage(props: {
               </div>
             )}
             <div>
-              <h1 className="text-4xl">{meta.name}</h1>
-              <p className="mt-4 text-2l">{meta.description}</p>
+              <h1 className="text-4xl">{meta?.name}</h1>
+              <p className="mt-4 text-2l">{meta?.description}</p>
             </div>
           </div>
         </div>

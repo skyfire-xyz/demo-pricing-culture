@@ -1,9 +1,13 @@
 import "@/styles/globals.css"
+import "@/styles/skyfire-theme.css"
 import { Metadata } from "next"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { PricingCultureProvider } from "@/lib/pricing-culture/context"
+import { ApiKeyConfig } from "@/lib/skyfire-sdk/components/api-key-config"
+import SkyfireWidget from "@/lib/skyfire-sdk/components/skyfire-widget"
+import { SkyfireProvider } from "@/lib/skyfire-sdk/context/context"
 import { cn } from "@/lib/utils"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
@@ -42,13 +46,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <PricingCultureProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <SiteHeader />
-                <div className="flex-1">{children}</div>
-              </div>
-              <TailwindIndicator />
-            </PricingCultureProvider>
+            <SkyfireProvider>
+              <PricingCultureProvider>
+                <div className="relative flex min-h-screen flex-col pb-20">
+                  <SiteHeader />
+                  <SkyfireWidget />
+                  <div className="flex-1">{children}</div>
+                </div>
+                <TailwindIndicator />
+              </PricingCultureProvider>
+            </SkyfireProvider>
           </ThemeProvider>
         </body>
       </html>

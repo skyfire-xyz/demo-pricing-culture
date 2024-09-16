@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import axios from "axios"
 
+import { useSkyfireAPIClient } from "../skyfire-sdk/context/context"
 import { MarketCompObject } from "./type"
 
 interface PricingCultureContextType {
@@ -20,6 +21,7 @@ const PricingCultureContext = createContext<
 export const PricingCultureProvider: React.FC<{
   children: React.ReactNode
 }> = ({ children }) => {
+  const client = useSkyfireAPIClient()
   const [marketComps, setMarketComps] = useState<MarketCompObject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,11 +31,11 @@ export const PricingCultureProvider: React.FC<{
 
   useEffect(() => {
     const fetchMarketComps = async () => {
+      if (!client) return
       try {
-        const response = await axios.post(`/api/skyfire-api`, {
-          method: "GET",
-          path: `proxy/pricing-culture/api/data/dailycomps`,
-        })
+        const response = await client.get(
+          `/proxy/pricing-culture/api/data/dailycomps`
+        )
         setMarketComps(response.data.objects)
         setLoading(false)
       } catch (err) {
@@ -42,16 +44,16 @@ export const PricingCultureProvider: React.FC<{
       }
     }
     fetchMarketComps()
-  }, [])
+  }, [client])
 
   const fetchCompDetails = async (id: string, from: string, to: string) => {
+    if (!client) return
     setLoading(true)
     setError(null)
     try {
-      const response = await axios.post(`/api/skyfire-api`, {
-        method: "GET",
-        path: `proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`,
-      })
+      const response = await client.get(
+        `/proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`
+      )
       setSelectedComp(response.data.objects)
       setLoading(false)
     } catch (err) {
@@ -88,13 +90,14 @@ export const useSelectedComp = ({
   from: string
   to: string
 }) => {
+  const client = useSkyfireAPIClient()
   const { marketComps, selectedComp, fetchCompDetails } = usePricingCulture()
 
   useEffect(() => {
-    if (id) {
+    if (id && client) {
       fetchCompDetails(id, from, to)
     }
-  }, [id])
+  }, [id, client])
 
   const selectedCompDetail =
     id && marketComps.find((comp) => comp.id == Number(id))
