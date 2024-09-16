@@ -56,7 +56,7 @@ export interface WalletDataResponse {
 // PaymentClaim
 type ClaimStatus = "SUCCESS" | "PENDING" | "FAILED"
 
-type PaymentClaim = {
+export type PaymentClaim = {
   createdAt: string
   currency: string
   destinationAddress: string

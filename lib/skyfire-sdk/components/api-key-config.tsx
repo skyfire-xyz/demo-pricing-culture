@@ -7,6 +7,13 @@ import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
   Form,
   FormControl,
   FormDescription,
@@ -48,26 +55,33 @@ export function ApiKeyConfig() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-        <FormField
-          control={form.control}
-          name="apikey"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Skyfire API Key</FormLabel>
-              <FormControl>
-                <Input placeholder="API Key" {...field} />
-              </FormControl>
-              <FormDescription>
-                If you do not have an API Key, please visit app.skyfire.xyz
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Save it locally</Button>
-      </form>
-    </Form>
+    <Card className="bg-transparent border-none p-0 shadow-none">
+      <CardHeader>
+        <CardTitle>Skyfire API Key Configuration</CardTitle>
+        <CardDescription>
+          If you do not have an API Key, please visit app.skyfire.xyz to create.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="">
+            <FormField
+              control={form.control}
+              name="apikey"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="API Key" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="bg-secondary mt-4">
+              Save it locally
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }

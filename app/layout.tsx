@@ -1,14 +1,14 @@
 import "@/styles/globals.css"
+import "@/styles/skyfire-theme.css"
 import { Metadata } from "next"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { PricingCultureProvider } from "@/lib/pricing-culture/context"
 import { ApiKeyConfig } from "@/lib/skyfire-sdk/components/api-key-config"
-import { SkyfireClientWidget } from "@/lib/skyfire-sdk/components/client-widget"
+import SkyfireWidget from "@/lib/skyfire-sdk/components/skyfire-widget"
 import { SkyfireProvider } from "@/lib/skyfire-sdk/context/context"
 import { cn } from "@/lib/utils"
-import AnimatedComponent from "@/components/ui/skyfire-sdk"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -50,9 +50,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <PricingCultureProvider>
                 <div className="relative flex min-h-screen flex-col">
                   <SiteHeader />
-                  {/* <SkyfireClientWidget /> */}
+                  <SkyfireWidget />
                   <div className="flex-1">{children}</div>
-                  {/* <AnimatedComponent /> */}
                 </div>
                 <TailwindIndicator />
               </PricingCultureProvider>
