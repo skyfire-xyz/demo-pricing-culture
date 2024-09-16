@@ -49,7 +49,7 @@ export default function DetailPage(props: {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>{meta.name}</BreadcrumbItem>
+            <BreadcrumbItem>{meta?.name}</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               {searchParams.from} ~ {searchParams.to}
@@ -59,7 +59,7 @@ export default function DetailPage(props: {
 
         <div className="mt-8">
           <div className="flex gap-4 items-center ">
-            {meta.params.img_url && (
+            {meta?.params.img_url && (
               <div className="capitalize bg-gradient p-4 rounded-lg">
                 <img
                   src={meta.params.img_url}
@@ -68,8 +68,8 @@ export default function DetailPage(props: {
               </div>
             )}
             <div>
-              <h1 className="text-4xl">{meta.name}</h1>
-              <p className="mt-4 text-2l">{meta.description}</p>
+              <h1 className="text-4xl">{meta?.name}</h1>
+              <p className="mt-4 text-2l">{meta?.description}</p>
             </div>
           </div>
         </div>

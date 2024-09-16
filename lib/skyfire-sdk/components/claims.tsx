@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 
 import { PaymentClaim } from "../context/type"
+import { usdAmount } from "../util"
 
 interface Claim {
   id: string
@@ -34,13 +35,6 @@ export function ClaimsWidget({ claims }: ClaimsWidgetProps) {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
-
-  const usdAmount = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(value)
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {

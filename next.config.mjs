@@ -4,6 +4,14 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'imagedelivery.net',
+      },
+    ],
+  }
 }
 
 export default nextConfig

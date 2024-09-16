@@ -3,9 +3,11 @@ import { SkyfireState } from "./type"
 
 export const initialState: SkyfireState = {
   localAPIKey: "",
+  isAPIKeyInitialized: false,
   wallet: null,
   balance: null,
   claims: null,
+  loading: false,
 }
 
 export const skyfireReducer = (
@@ -22,6 +24,7 @@ export const skyfireReducer = (
       return {
         ...state,
         localAPIKey: action.payload,
+        isAPIKeyInitialized: true,
       }
     case ActionType.UPDATE_WALLET_INFO:
       return {
@@ -33,6 +36,11 @@ export const skyfireReducer = (
       return {
         ...state,
         claims: action.payload.claims,
+      }
+    case ActionType.LOADING:
+      return {
+        ...state,
+        loading: action.payload,
       }
     default:
       return state

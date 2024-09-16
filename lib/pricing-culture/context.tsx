@@ -90,13 +90,14 @@ export const useSelectedComp = ({
   from: string
   to: string
 }) => {
+  const client = useSkyfireAPIClient()
   const { marketComps, selectedComp, fetchCompDetails } = usePricingCulture()
 
   useEffect(() => {
-    if (id) {
+    if (id && client) {
       fetchCompDetails(id, from, to)
     }
-  }, [id])
+  }, [id, client])
 
   const selectedCompDetail =
     id && marketComps.find((comp) => comp.id == Number(id))

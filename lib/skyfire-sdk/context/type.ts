@@ -80,8 +80,10 @@ export type PaymentClaimResponse = {
 
 // Skyfire State
 export interface SkyfireState {
-  localAPIKey: string
+  localAPIKey: string | null
+  isAPIKeyInitialized: boolean
   balance: Balance | null
   wallet: Wallet | null
   claims: PaymentClaim[] | null
+  loading?: boolean
 }

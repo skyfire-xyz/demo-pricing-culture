@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
+import { Loader2 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog"
 import {
@@ -11,41 +12,50 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { useSkyfireAPIKey, useSkyfireState } from "../context/context"
+import {
+  useLoadingState,
+  useSkyfireAPIKey,
+  useSkyfireState,
+} from "../context/context"
 import { usdAmount } from "../util"
 import { ApiKeyConfig } from "./api-key-config"
 import { WalletInterface } from "./wallet"
 
 export default function SkyfireWidget() {
-  const localAPIKey = useSkyfireAPIKey()
+  const { localAPIKey, isReady } = useSkyfireAPIKey()
+
+  const loading = useLoadingState()
   const { balance } = useSkyfireState()
-  const [isDialogOpen, setIsDialogOpen] = useState(!localAPIKey)
-  const [showWidget, setShowWidget] = useState(!!localAPIKey)
+  const [isDialogOpen, setIsDialogOpen] = useState(isReady && !localAPIKey)
+  const [showWidget, setShowWidget] = useState(isReady && !!localAPIKey)
 
   useEffect(() => {
-    if (localAPIKey) {
-      setIsDialogOpen(false)
-      setShowWidget(true)
+    if (isReady) {
+      if (localAPIKey) {
+        setIsDialogOpen(false)
+        setShowWidget(true)
+      } else {
+        setIsDialogOpen(true)
+        setShowWidget(false)
+      }
     }
-  }, [localAPIKey])
+  }, [localAPIKey, isReady])
 
   const minimizedVariants = {
     hidden: {
       opacity: 0,
       scale: 0.8,
-      x: "-50%",
-      y: "-50%",
-      left: "50%",
-      top: "50%",
+      x: 0,
+      y: 0,
+      right: "20px",
+      bottom: "20px",
     },
     visible: {
       opacity: 1,
       scale: 1,
       x: 0,
       y: 0,
-      left: "auto",
       right: "20px",
-      top: "auto",
       bottom: "20px",
       transition: {
         type: "spring",
@@ -54,15 +64,6 @@ export default function SkyfireWidget() {
       },
     },
   }
-
-  const claims = [
-    "Generate Image",
-    "Analyze Text",
-    "Translate Language",
-    "Summarize Document",
-    "Detect Objects",
-    "Sentiment Analysis",
-  ]
 
   return (
     <div className="skyfire-theme">
@@ -78,7 +79,7 @@ export default function SkyfireWidget() {
           <Popover>
             <PopoverTrigger asChild>
               <motion.div
-                initial="hidden"
+                initial={localAPIKey ? "visible" : "hidden"}
                 animate="visible"
                 exit="hidden"
                 variants={minimizedVariants}
@@ -94,13 +95,14 @@ export default function SkyfireWidget() {
                 whileTap={{ scale: 0.95 }}
               >
                 <div className="flex items-center space-x-2 p-4">
-                  {/* <Image
-                    src="/placeholder.svg?height=40&width=40"
+                  <Image
+                    src="https://imagedelivery.net/WemO4_3zZlyNq-8IGpxrAQ/9b7b7f1c-a4b7-4777-c7ff-c92b50865600/public"
                     alt="Company Logo"
                     width={40}
                     height={40}
                     className="rounded-full"
-                  /> */}
+                  />
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span className="text-primary-foreground font-semibold">
                     {usdAmount(balance?.escrow.available || "0")}
                   </span>

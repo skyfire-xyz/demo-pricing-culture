@@ -1,5 +1,3 @@
-import { ClaimsResponse } from "@skyfire-xyz/skyfire-sdk"
-
 import { PaymentClaimResponse, SkyfireState, WalletDataResponse } from "./type"
 
 export enum ActionType {
@@ -7,6 +5,7 @@ export enum ActionType {
   SAVE_LOCAL_API_KEY = "SAVE_LOCAL_API_KEY",
   UPDATE_WALLET_INFO = "UPDATE_WALLET_INFO",
   UPDATE_CLAIMS_INFO = "UPDATE_CLAIMS_INFO",
+  LOADING = "LOADING",
 }
 
 interface UpdateSkyfireInfoAction {
@@ -29,12 +28,18 @@ interface UpdateClaimsInfoAction {
   payload: PaymentClaimResponse
 }
 
+interface LoadingAction {
+  type: ActionType.LOADING
+  payload: boolean
+}
+
 // Actions Types
 export type SkyfireAction =
   | UpdateSkyfireInfoAction
   | SaveLocalAPIKeyAction
   | UpdateWalletInfoAction
   | UpdateClaimsInfoAction
+  | LoadingAction
 
 // Actions
 export const updateSkyfireInfo = (data: SkyfireState): SkyfireAction => ({
@@ -60,5 +65,10 @@ export const updateSkyfireClaims = (
   data: PaymentClaimResponse
 ): SkyfireAction => ({
   type: ActionType.UPDATE_CLAIMS_INFO,
+  payload: data,
+})
+
+export const loading = (data: boolean): SkyfireAction => ({
+  type: ActionType.LOADING,
   payload: data,
 })

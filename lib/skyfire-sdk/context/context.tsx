@@ -11,15 +11,16 @@ import React, {
 import axios, { AxiosInstance } from "axios"
 
 import {
+  SkyfireAction,
+  loading,
   updateSkyfireAPIKey,
   updateSkyfireClaims,
-  updateSkyfireInfo,
   updateSkyfireWallet,
 } from "@/lib/skyfire-sdk/context/action"
 
 import { getApiKeyFromLocalStorage } from "../util"
 import { initialState, skyfireReducer } from "./reducer"
-import { SkyfireAction, SkyfireState } from "./type"
+import { SkyfireState } from "./type"
 
 interface SkyfireContextType {
   state: SkyfireState
@@ -45,6 +46,9 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     instance.interceptors.request.use(
       (config) => {
         config.headers["skyfire-api-key"] = state.localAPIKey
+        if (config.url?.includes("proxy")) {
+          dispatch(loading(true))
+        }
         return config
       },
       (error) => Promise.reject(error)
@@ -52,11 +56,19 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
 
     // Response interceptor
     instance.interceptors.response.use(
-      (response) => {
+      async (response) => {
         // Can Process Payment Here
+        setTimeout(() => {
+          dispatch(loading(false))
+          if (response.headers["skyfire-payment-reference-id"]) {
+            fetchUserBlanace()
+            fetchUserClaims()
+          }
+        }, 500)
         return response
       },
       (error) => {
+        dispatch(loading(false))
         if (error.response && error.response.status === 401) {
         }
         return Promise.reject(error)
@@ -68,9 +80,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     const apiKey = getApiKeyFromLocalStorage()
-    if (apiKey) {
-      dispatch(updateSkyfireAPIKey(apiKey))
-    }
+    dispatch(updateSkyfireAPIKey(apiKey))
   }, [])
 
   async function fetchUserBlanace() {
@@ -123,11 +133,19 @@ export const useSkyfireState = () => {
 export const useSkyfireAPIKey = () => {
   const { state } = useSkyfire()
 
-  return state?.localAPIKey
+  return {
+    localAPIKey: state?.localAPIKey,
+    isReady: state?.isAPIKeyInitialized,
+  }
 }
 
 export const useSkyfireAPIClient = () => {
   const { state, apiClient } = useSkyfire()
   if (!state.localAPIKey) return null
   return apiClient
+}
+
+export const useLoadingState = () => {
+  const { state } = useSkyfire()
+  return state?.loading
 }
