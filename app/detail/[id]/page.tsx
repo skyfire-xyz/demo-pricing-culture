@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { useSelectedComp } from "@/lib/pricing-culture/context"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +33,7 @@ export default function DetailPage(props: {
   searchParams: { from: string; to: string }
 }) {
   const { params, searchParams } = props
+  const router = useRouter()
   const [tab, setTab] = useState("0")
 
   const { data, meta } = useSelectedComp({
@@ -46,7 +48,14 @@ export default function DetailPage(props: {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink
+                className="cursor-pointer"
+                onClick={() => {
+                  router.push("/")
+                }}
+              >
+                Home
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>{meta?.name}</BreadcrumbItem>

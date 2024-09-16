@@ -1,9 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
-import { Loader2 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog"
 import {
@@ -11,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import {
   useLoadingState,
@@ -19,6 +18,7 @@ import {
 } from "../context/context"
 import { usdAmount } from "../util"
 import { ApiKeyConfig } from "./api-key-config"
+import LoadingImageWidget from "./loadingImage"
 import { WalletInterface } from "./wallet"
 
 export default function SkyfireWidget() {
@@ -95,15 +95,13 @@ export default function SkyfireWidget() {
                 whileTap={{ scale: 0.95 }}
               >
                 <div className="flex items-center space-x-2 p-4">
-                  <Image
+                  <LoadingImageWidget
                     src="https://imagedelivery.net/WemO4_3zZlyNq-8IGpxrAQ/9b7b7f1c-a4b7-4777-c7ff-c92b50865600/public"
                     alt="Company Logo"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
+                    size={50}
+                    loading={!!loading}
                   />
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span className="text-primary-foreground font-semibold">
+                  <span className="text-primary-foreground text-xl font-semibold">
                     {usdAmount(balance?.escrow.available || "0")}
                   </span>
                 </div>

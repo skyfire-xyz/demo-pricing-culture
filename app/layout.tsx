@@ -48,7 +48,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <SkyfireProvider>
               <PricingCultureProvider>
-                <div className="relative flex min-h-screen flex-col">
+                <div className="relative flex min-h-screen flex-col pb-20">
                   <SiteHeader />
                   <SkyfireWidget />
                   <div className="flex-1">{children}</div>
