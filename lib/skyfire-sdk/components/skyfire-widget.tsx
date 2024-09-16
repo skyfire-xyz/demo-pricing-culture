@@ -67,7 +67,7 @@ export default function SkyfireWidget() {
 
   return (
     <div className="skyfire-theme">
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen}>
         <DialogOverlay />
         <DialogContent className="skyfire-theme sm:max-w-[425px]">
           <ApiKeyConfig />

@@ -9,12 +9,15 @@ import {
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import { useSkyfireState } from "../context/context"
+import { updateSkyfireAPIKey } from "../context/action"
+import { useSkyfire, useSkyfireState } from "../context/context"
 import { usdAmount } from "../util"
 import { ClaimsWidget } from "./claims"
+import LogoutButton from "./logout"
 
 export function WalletInterface() {
   const { wallet, balance, claims } = useSkyfireState()
+  const { dispatch, logout } = useSkyfire()
 
   return (
     <Card className="skyfire-theme w-[200px] max-w-[200px] mx-auto">
@@ -64,6 +67,9 @@ export function WalletInterface() {
                   <strong>Native Balance:</strong>{" "}
                   {usdAmount(balance?.native.balance || "0")}
                 </p>
+                <div className="mt-4">
+                  <LogoutButton onLogout={logout} />
+                </div>
               </div>
             </div>
           </TabsContent>

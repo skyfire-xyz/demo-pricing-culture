@@ -32,7 +32,7 @@ export const getApiKeyFromLocalStorage = () => {
   return localStorage.getItem(API_KEY_LOCAL_STORAGE_KEY)
 }
 
-const removeApiKeyFromLocalStorage = () => {
+export const removeApiKeyFromLocalStorage = () => {
   if (!isLocalStorageSupported()) {
     return
   }

@@ -18,7 +18,10 @@ import {
   updateSkyfireWallet,
 } from "@/lib/skyfire-sdk/context/action"
 
-import { getApiKeyFromLocalStorage } from "../util"
+import {
+  getApiKeyFromLocalStorage,
+  removeApiKeyFromLocalStorage,
+} from "../util"
 import { initialState, skyfireReducer } from "./reducer"
 import { SkyfireState } from "./type"
 
@@ -26,6 +29,7 @@ interface SkyfireContextType {
   state: SkyfireState
   dispatch: React.Dispatch<SkyfireAction>
   apiClient: AxiosInstance | null
+  logout: () => void
 }
 
 const SkyfireContext = createContext<SkyfireContextType | undefined>(undefined)
@@ -99,6 +103,11 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     }
   }
 
+  function logout() {
+    removeApiKeyFromLocalStorage()
+    dispatch(updateSkyfireAPIKey(null))
+  }
+
   useEffect(() => {
     if (apiClient) {
       // Fetch User Balance
@@ -108,7 +117,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
   }, [apiClient])
 
   return (
-    <SkyfireContext.Provider value={{ state, dispatch, apiClient }}>
+    <SkyfireContext.Provider value={{ state, dispatch, apiClient, logout }}>
       {children}
     </SkyfireContext.Provider>
   )
