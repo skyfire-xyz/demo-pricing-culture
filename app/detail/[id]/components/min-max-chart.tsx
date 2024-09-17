@@ -5,6 +5,10 @@ import { max, min } from "lodash"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
 import {
+  DailyCompObject,
+  MarketCompAttributes,
+} from "@/lib/pricing-culture/type"
+import {
   Card,
   CardContent,
   CardDescription,
@@ -29,15 +33,17 @@ const chartConfig = {
 
 interface ChartProps {
   title?: string
-  data: any
+  data: MarketCompAttributes[] | null
   from: string
   to: string
 }
 export default function MinMaxChart({ title, data, from, to }: ChartProps) {
-  const chartData = data.map((event) => ({
-    date: event.event_time,
-    average: Number(event.value_average),
-  }))
+  const chartData = data
+    ? data.map((event: MarketCompAttributes) => ({
+        date: event.event_time,
+        average: Number(event.value_average),
+      }))
+    : []
 
   return (
     <Card>
@@ -79,7 +85,7 @@ export default function MinMaxChart({ title, data, from, to }: ChartProps) {
                 (dataMin: number) => dataMin - dataMin * 0.05,
                 (dataMax: number) => dataMax + dataMax * 0.05,
               ]}
-              tickFormatter={(value) => Math.floor(value)}
+              tickFormatter={(value) => `${Math.floor(value)}`}
             />
             <XAxis
               dataKey="date"

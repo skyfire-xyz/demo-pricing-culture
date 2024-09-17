@@ -30,9 +30,9 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface ChartProps {
-  prices: number[]
-  max: number
-  min: number
+  prices: string[]
+  max: string
+  min: string
   numItems: number
 }
 export default function Chart({ prices, max, min, numItems }: ChartProps) {

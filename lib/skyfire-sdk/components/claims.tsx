@@ -47,7 +47,7 @@ export function ClaimsWidget({ claims }: ClaimsWidgetProps) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-background rounded-lg overflow-hidden">
+    <div className="w-full max-w-sm mx-auto bg-background rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>

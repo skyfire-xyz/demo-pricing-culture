@@ -32,7 +32,7 @@ import Chart from "./chart"
 
 interface AssetProps {
   asset: AssetInfo
-  price: number
+  price: string
 }
 export default function Asset({ asset, price }: AssetProps) {
   return (

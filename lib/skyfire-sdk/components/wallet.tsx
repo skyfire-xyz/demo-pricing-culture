@@ -20,19 +20,19 @@ export function WalletInterface() {
   const { dispatch, logout } = useSkyfire()
 
   return (
-    <Card className="skyfire-theme w-[200px] max-w-[200px] mx-auto">
+    <Card className="skyfire-theme max-w-full md:max-w-[300px]">
       <CardHeader>
         <CardTitle>{usdAmount(balance?.escrow.available || "0")}</CardTitle>
         <CardDescription>{wallet?.walletAddress}</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="claim-history">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="">
             <TabsTrigger value="claim-history">Claim History</TabsTrigger>
             <TabsTrigger value="wallet-info">Wallet Details</TabsTrigger>
           </TabsList>
           <TabsContent value="wallet-info">
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-sm">
               <div>
                 <h3 className="text-lg font-semibold">Wallet Details</h3>
                 <p>
