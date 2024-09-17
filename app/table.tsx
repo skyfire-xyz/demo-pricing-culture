@@ -18,6 +18,7 @@ import { ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { usePricingCulture } from "@/lib/pricing-culture/context"
 import { MarketCompObject, MarketCompParams } from "@/lib/pricing-culture/type"
+import { formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import {
@@ -82,7 +83,9 @@ export const columns: ColumnDef<MarketCompObject>[] = [
   {
     id: "price_range",
     accessorFn: (row) =>
-      `${row.params.min_price || "NaN"} - ${row.params.max_price || "NaN"}`,
+      `${row.params.min_price ? formatPrice(row.params.min_price) : "NaN"} - ${
+        row.params.max_price ? formatPrice(row.params.max_price) : "NaN"
+      }`,
     header: "Price Range",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("price_range")}</div>
