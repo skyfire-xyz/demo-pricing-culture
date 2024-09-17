@@ -100,9 +100,7 @@ export const columns: ColumnDef<MarketCompObject>[] = [
 
 export function DataTable() {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
+  const [columnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
@@ -114,7 +112,6 @@ export function DataTable() {
     columns,
     enableRowSelection: true,
     onSortingChange: setSorting,
-    // onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -128,6 +125,20 @@ export function DataTable() {
       rowSelection,
     },
   })
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 640
+      setColumnVisibility({
+        description: !isMobile,
+        available: !isMobile,
+      })
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const routetr = useRouter()
 

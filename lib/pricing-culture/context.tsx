@@ -113,6 +113,8 @@ export const useSelectedComp = ({
 
   return {
     meta: selectedCompDetail,
-    data: selectedComp,
+    data: selectedComp
+      ? selectedComp.filter((comp) => comp.market_comp_id === Number(id))
+      : null,
   }
 }

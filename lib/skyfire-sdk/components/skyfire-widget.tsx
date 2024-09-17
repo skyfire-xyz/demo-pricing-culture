@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ToastProvider } from "@/components/ui/toast"
 import { Toaster } from "@/components/ui/toaster"
 
 import {
@@ -75,7 +76,6 @@ export default function SkyfireWidget() {
           <ApiKeyConfig error={error} />
         </DialogContent>
       </Dialog>
-      <Toaster />
       <AnimatePresence>
         {showWidget && (
           <Popover>
@@ -92,7 +92,7 @@ export default function SkyfireWidget() {
                   overflow: "hidden",
                   cursor: "pointer",
                 }}
-                className="rounded-full p-2 flex items-center"
+                className="rounded-full p-0 md:p-2 flex items-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -119,6 +119,7 @@ export default function SkyfireWidget() {
           </Popover>
         )}
       </AnimatePresence>
+      <Toaster />
     </div>
   )
 }

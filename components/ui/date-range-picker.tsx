@@ -338,7 +338,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
         <DialogHeader>
           <DialogTitle>Please pick date range</DialogTitle>
           <DialogDescription>
-            <div className="flex py-2">
+            <div className="flex py-2 justify-center">
               <div className="flex">
                 <div className="flex flex-col">
                   <div className="flex flex-col lg:flex-row gap-2 px-3 justify-end items-center lg:items-start pb-4 lg:pb-0">
@@ -515,7 +515,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
             </div>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex flex-col gap-2 md:flex-row">
           <Button onClick={onClose}>Cancel</Button>
           <Button
             onClick={() => {

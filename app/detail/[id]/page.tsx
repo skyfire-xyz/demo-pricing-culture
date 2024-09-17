@@ -43,7 +43,7 @@ export default function DetailPage(props: {
 
   if (data) {
     return (
-      <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
+      <section className="container grid items-center gap-2 md:gap-6 pb-8 pt-6 md:py-10">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -94,7 +94,7 @@ export default function DetailPage(props: {
         <Tabs value={tab} className="w-full mt-8 h-auto bg-transparent">
           <div className="flex gap-4 items-center">
             <Select value={tab} onValueChange={(index) => setTab(`${index}`)}>
-              <SelectTrigger className="w-[300px]">
+              <SelectTrigger className="md:w-[300px]">
                 <SelectValue placeholder="Select a Event Time" />
               </SelectTrigger>
               <SelectContent>
@@ -119,7 +119,7 @@ export default function DetailPage(props: {
                     max={asset.value_max}
                     min={asset.value_min}
                   />
-                  <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="h-full">
                       <p className="font-bold mb-1">
                         Min price item of the day
