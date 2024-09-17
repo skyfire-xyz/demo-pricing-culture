@@ -11,16 +11,16 @@ export interface MarketCompParams {
 }
 
 export interface MarketCompAttributes {
-  id: boolean
-  market_comp_id: boolean
-  event_time: boolean
-  value_min: boolean
-  value_max: boolean
-  value_average: boolean
-  number_of_constituents: boolean
-  value_min_asset: boolean
-  value_max_asset: boolean
-  prices: boolean
+  id: number
+  market_comp_id: number
+  event_time: string
+  value_min: string
+  value_max: string
+  value_average: string
+  number_of_constituents: number
+  value_min_asset: AssetInfo
+  value_max_asset: AssetInfo
+  prices: string[]
 }
 
 export interface MarketCompObject {

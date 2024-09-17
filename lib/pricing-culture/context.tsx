@@ -5,15 +5,15 @@ import axios from "axios"
 
 import { useSkyfireAPIClient } from "../skyfire-sdk/context/context"
 import exampleData from "./example.json"
-import { DailyCompObject, MarketCompObject } from "./type"
+import { MarketCompAttributes, MarketCompObject } from "./type"
 
 interface PricingCultureContextType {
   marketComps: MarketCompObject[]
   loading: boolean
   error: string | null
-  selectedComp: MarketCompObject | null
+  selectedComp: MarketCompAttributes[] | null
   fetchCompDetails: (id: string, from: string, to: string) => Promise<void>
-  exampleData: DailyCompObject[] | null
+  exampleData: MarketCompAttributes[] | null
 }
 
 const PricingCultureContext = createContext<
@@ -27,9 +27,9 @@ export const PricingCultureProvider: React.FC<{
   const [marketComps, setMarketComps] = useState<MarketCompObject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedComp, setSelectedComp] = useState<MarketCompObject | null>(
-    null
-  )
+  const [selectedComp, setSelectedComp] = useState<
+    MarketCompAttributes[] | null
+  >(null)
 
   useEffect(() => {
     const fetchMarketComps = async () => {
@@ -98,7 +98,10 @@ export const useSelectedComp = ({
   id: string
   from: string
   to: string
-}) => {
+}): {
+  meta: MarketCompObject | null
+  data: MarketCompAttributes[] | null
+} => {
   const client = useSkyfireAPIClient()
   const { marketComps, selectedComp, fetchCompDetails } = usePricingCulture()
 
@@ -108,11 +111,12 @@ export const useSelectedComp = ({
     }
   }, [id, client])
 
-  const selectedCompDetail =
-    id && marketComps.find((comp) => comp.id == Number(id))
+  const selectedCompDetail = id
+    ? marketComps.find((comp) => comp.id == Number(id))
+    : null
 
   return {
-    meta: selectedCompDetail,
+    meta: selectedCompDetail || null,
     data: selectedComp
       ? selectedComp.filter((comp) => comp.market_comp_id === Number(id))
       : null,

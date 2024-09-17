@@ -8,6 +8,7 @@ export const initialState: SkyfireState = {
   balance: null,
   claims: null,
   loading: false,
+  error: null,
 }
 
 export const skyfireReducer = (
