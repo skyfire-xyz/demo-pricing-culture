@@ -8,19 +8,22 @@ import React, {
   useMemo,
   useReducer,
 } from "react"
-import axios, { AxiosInstance } from "axios"
+import axios, { AxiosError, AxiosInstance, isAxiosError } from "axios"
 
 import {
   SkyfireAction,
   loading,
+  updateError,
   updateSkyfireAPIKey,
   updateSkyfireClaims,
   updateSkyfireWallet,
 } from "@/lib/skyfire-sdk/context/action"
+import { toast } from "@/components/hooks/use-toast"
 
 import {
   getApiKeyFromLocalStorage,
   removeApiKeyFromLocalStorage,
+  usdAmount,
 } from "../util"
 import { initialState, skyfireReducer } from "./reducer"
 import { SkyfireState } from "./type"
@@ -67,6 +70,15 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
           if (response.headers["skyfire-payment-reference-id"]) {
             fetchUserBlanace()
             fetchUserClaims()
+
+            if (response.headers["skyfire-payment-amount"]) {
+              toast({
+                title: `Spent ${usdAmount(
+                  response.headers["skyfire-payment-amount"]
+                )}`,
+                duration: 2000,
+              })
+            }
           }
         }, 500)
         return response
@@ -93,7 +105,11 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const res = await apiClient.get("/v1/wallet/balance")
         dispatch(updateSkyfireWallet(res.data))
-      } catch (e) {}
+      } catch (e) {
+        if (isAxiosError(e)) {
+          dispatch(updateError(e))
+        }
+      }
     }
   }
 
@@ -103,7 +119,11 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const res = await apiClient.get("/v1/wallet/claims")
         dispatch(updateSkyfireClaims(res.data))
-      } catch (e) {}
+      } catch (e: unknown) {
+        if (isAxiosError(e)) {
+          dispatch(updateError(e))
+        }
+      }
     }
   }
 

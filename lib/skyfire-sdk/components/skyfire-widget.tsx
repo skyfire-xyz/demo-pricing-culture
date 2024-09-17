@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Toaster } from "@/components/ui/toaster"
 
 import {
   useLoadingState,
@@ -23,6 +24,7 @@ import { WalletInterface } from "./wallet"
 
 export default function SkyfireWidget() {
   const { localAPIKey, isReady } = useSkyfireAPIKey()
+  const { error } = useSkyfireState()
 
   const loading = useLoadingState()
   const { balance } = useSkyfireState()
@@ -67,13 +69,13 @@ export default function SkyfireWidget() {
 
   return (
     <div className="skyfire-theme">
-      <Dialog open={isDialogOpen}>
+      <Dialog open={isDialogOpen || !!error}>
         <DialogOverlay />
         <DialogContent className="skyfire-theme sm:max-w-[425px]">
-          <ApiKeyConfig />
+          <ApiKeyConfig error={error} />
         </DialogContent>
       </Dialog>
-
+      <Toaster />
       <AnimatePresence>
         {showWidget && (
           <Popover>

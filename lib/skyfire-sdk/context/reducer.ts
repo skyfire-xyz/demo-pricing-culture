@@ -42,6 +42,11 @@ export const skyfireReducer = (
         ...state,
         loading: action.payload,
       }
+    case ActionType.UPDATE_ERROR:
+      return {
+        ...state,
+        error: action.payload,
+      }
     default:
       return state
   }
