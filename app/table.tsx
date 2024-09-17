@@ -51,7 +51,7 @@ export const columns: ColumnDef<MarketCompObject>[] = [
           {params.img_url ? (
             <img
               src={params.img_url}
-              className="h-[50px] w-[100px] object-contain"
+              className="invert h-[50px] w-[100px] object-contain"
             />
           ) : (
             <div className="flex items-center justify-center h-[50px] text-black">

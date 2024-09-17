@@ -25,22 +25,15 @@ const chartConfig = {
     label: "Average",
     color: "hsl(var(--primary))",
   },
-  // min: {
-  //   label: "Min Price",
-  //   color: "hsl(var(--chart-2))",
-  // },
-  // max: {
-  //   label: "Max Price",
-  //   color: "hsl(var(--chart-3))",
-  // },
 } satisfies ChartConfig
 
 interface ChartProps {
+  title?: string
   data: any
   from: string
   to: string
 }
-export default function MinMaxChart({ data, from, to }: ChartProps) {
+export default function MinMaxChart({ title, data, from, to }: ChartProps) {
   const chartData = data.map((event) => ({
     date: event.event_time,
     average: Number(event.value_average),
@@ -51,7 +44,7 @@ export default function MinMaxChart({ data, from, to }: ChartProps) {
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
           <CardTitle>
-            Average Price ( {from} - {to} )
+            {title || "Average Price"} ( {from} - {to} )
           </CardTitle>
           <CardDescription></CardDescription>
         </div>

@@ -1,5 +1,7 @@
 // API
 
+import { AxiosError } from "axios"
+
 type NetworkType =
   | "polygon_testnet"
   | "polygon_mainnet"
@@ -86,4 +88,5 @@ export interface SkyfireState {
   wallet: Wallet | null
   claims: PaymentClaim[] | null
   loading?: boolean
+  error: AxiosError | null
 }

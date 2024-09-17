@@ -5,7 +5,6 @@ import { Metadata } from "next"
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { PricingCultureProvider } from "@/lib/pricing-culture/context"
-import { ApiKeyConfig } from "@/lib/skyfire-sdk/components/api-key-config"
 import SkyfireWidget from "@/lib/skyfire-sdk/components/skyfire-widget"
 import { SkyfireProvider } from "@/lib/skyfire-sdk/context/context"
 import { cn } from "@/lib/utils"
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.variable
           )}
         >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="dark">
             <SkyfireProvider>
               <PricingCultureProvider>
                 <div className="relative flex min-h-screen flex-col pb-20">

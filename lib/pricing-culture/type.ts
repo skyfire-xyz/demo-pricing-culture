@@ -57,7 +57,7 @@ export interface AssetInfo {
   platform: string
 }
 
-interface DailyCompObject {
+export interface DailyCompObject {
   id: number
   market_comp_id: number
   event_time: string

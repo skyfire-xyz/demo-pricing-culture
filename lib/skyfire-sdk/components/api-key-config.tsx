@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { AxiosError } from "axios"
 import { set } from "lodash"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-import { updateSkyfireAPIKey } from "../context/action"
+import { updateError, updateSkyfireAPIKey } from "../context/action"
 import { useSkyfire } from "../context/context"
 import { setApiKeyToLocalStorage } from "../util"
 
@@ -40,7 +41,7 @@ const FormSchema = z.object({
     ),
 })
 
-export function ApiKeyConfig() {
+export function ApiKeyConfig({ error }: { error?: AxiosError | null }) {
   const { dispatch } = useSkyfire()
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -51,6 +52,7 @@ export function ApiKeyConfig() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const res = setApiKeyToLocalStorage(data.apikey)
+    dispatch(updateError(null))
     if (res) dispatch(updateSkyfireAPIKey(data.apikey))
   }
 
@@ -59,7 +61,14 @@ export function ApiKeyConfig() {
       <CardHeader>
         <CardTitle>Skyfire API Key Configuration</CardTitle>
         <CardDescription>
-          If you do not have an API Key, please visit app.skyfire.xyz to create.
+          {error ? (
+            <p className="text-primary">
+              It seems that your API key was invalid. Please re-enter. Make sure
+              to copy from the correct environment.
+            </p>
+          ) : (
+            "If you do not have an API Key, please visit app.skyfire.xyz to create."
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>

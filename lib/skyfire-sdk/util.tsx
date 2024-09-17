@@ -54,7 +54,7 @@ export const setApiKeyToLocalStorage = (apiKey: string): boolean => {
 
 export function usdAmount(usdc: number | string) {
   if (usdc === undefined || usdc === null) {
-    return "0.00 USDC"
+    return "0.00 USD"
   }
   if (typeof usdc === "string") {
     usdc = usdc.split(" ")[0]
@@ -62,7 +62,7 @@ export function usdAmount(usdc: number | string) {
   // Converts USDC to USD by dividing by 1,000,000
   const usdAmount = Number(usdc) / 1000000
   if (usdAmount > 1) {
-    return "$" + usdAmount.toFixed(2) + " USDC"
+    return "$" + usdAmount.toFixed(2) + " USD"
   }
-  return "$" + usdAmount.toFixed(7) + " USDC"
+  return "$" + usdAmount.toFixed(7) + " USD"
 }

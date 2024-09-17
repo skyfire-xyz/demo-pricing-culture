@@ -1,3 +1,5 @@
+import { AxiosError } from "axios"
+
 import { PaymentClaimResponse, SkyfireState, WalletDataResponse } from "./type"
 
 export enum ActionType {
@@ -6,6 +8,7 @@ export enum ActionType {
   UPDATE_WALLET_INFO = "UPDATE_WALLET_INFO",
   UPDATE_CLAIMS_INFO = "UPDATE_CLAIMS_INFO",
   LOADING = "LOADING",
+  UPDATE_ERROR = "UPDATE_ERROR",
 }
 
 interface UpdateSkyfireInfoAction {
@@ -28,6 +31,11 @@ interface UpdateClaimsInfoAction {
   payload: PaymentClaimResponse
 }
 
+interface UpdateErrorAction {
+  type: ActionType.UPDATE_ERROR
+  payload: AxiosError | null
+}
+
 interface LoadingAction {
   type: ActionType.LOADING
   payload: boolean
@@ -40,6 +48,7 @@ export type SkyfireAction =
   | UpdateWalletInfoAction
   | UpdateClaimsInfoAction
   | LoadingAction
+  | UpdateErrorAction
 
 // Actions
 export const updateSkyfireInfo = (data: SkyfireState): SkyfireAction => ({
@@ -71,4 +80,9 @@ export const updateSkyfireClaims = (
 export const loading = (data: boolean): SkyfireAction => ({
   type: ActionType.LOADING,
   payload: data,
+})
+
+export const updateError = (error: AxiosError | null): SkyfireAction => ({
+  type: ActionType.UPDATE_ERROR,
+  payload: error,
 })
