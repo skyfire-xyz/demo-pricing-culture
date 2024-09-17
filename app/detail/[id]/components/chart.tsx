@@ -18,6 +18,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
+import { useDelayedRender } from "../hooks/use-delayed-render"
+
 export const description = "An interactive bar chart"
 
 const chartConfig = {
@@ -35,6 +37,7 @@ interface ChartProps {
 }
 export default function Chart({ prices, max, min, numItems }: ChartProps) {
   const chartData = prices.map((price, index) => ({ price: Number(price) }))
+  const shouldRender = useDelayedRender(5000)
 
   return (
     <Card className="mt-6">
@@ -43,51 +46,57 @@ export default function Chart({ prices, max, min, numItems }: ChartProps) {
           <CardTitle>Prices</CardTitle>
           <CardDescription></CardDescription>
         </div>
-        <div className="flex">
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row">
+          <div className="flex-1 border-b sm:border-b-0 sm:border-r p-4 sm:p-6">
+            <span className="block text-xs text-muted-foreground mb-1">
               Number of Items
             </span>
-            <span className="text-lg font-bold leading-none sm:text-3xl">
+            <span className="text-xl font-bold leading-none sm:text-2xl lg:text-3xl">
               {numItems}
             </span>
           </div>
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">Min Price</span>
-            <span className="text-lg font-bold leading-none sm:text-3xl">
+          <div className="flex-1 border-b sm:border-b-0 sm:border-r p-4 sm:p-6">
+            <span className="block text-xs text-muted-foreground mb-1">
+              Min Price
+            </span>
+            <span className="text-xl font-bold leading-none sm:text-2xl lg:text-3xl">
               {formatPrice(min)}
             </span>
           </div>
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">Max Price</span>
-            <span className="text-lg font-bold leading-none sm:text-3xl">
+          <div className="flex-1 p-4 sm:p-6">
+            <span className="block text-xs text-muted-foreground mb-1">
+              Max Price
+            </span>
+            <span className="text-xl font-bold leading-none sm:text-2xl lg:text-3xl">
               {formatPrice(max)}
             </span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+        {shouldRender && (
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[250px] w-full"
           >
-            <Bar dataKey="price" type="natural" fill="var(--color-price)" />
-            <CartesianGrid vertical={false} />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <YAxis type="number" domain={["dataMin", "dataMax"]} />
-          </BarChart>
-        </ChartContainer>
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <Bar dataKey="price" type="natural" fill="var(--color-price)" />
+              <CartesianGrid vertical={false} />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <YAxis type="number" domain={["dataMin", "dataMax"]} />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )
