@@ -46,7 +46,8 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
   const apiClient = useMemo(() => {
     if (!state.localAPIKey) return null
     const instance = axios.create({
-      baseURL: "https://api-qa.skyfire.xyz",
+      baseURL:
+        process.env.NEXT_PUBLIC_SKYFIRE_API_URL || "https://api.skyfire.xyz",
     })
 
     // Request interceptor
