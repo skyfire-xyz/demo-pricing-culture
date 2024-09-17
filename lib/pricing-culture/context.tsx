@@ -1,6 +1,13 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
+import { useRouter } from "next/navigation"
 import axios from "axios"
 
 import { useSkyfireAPIClient } from "../skyfire-sdk/context/context"
@@ -25,7 +32,8 @@ export const PricingCultureProvider: React.FC<{
 }> = ({ children }) => {
   const client = useSkyfireAPIClient()
   const [marketComps, setMarketComps] = useState<MarketCompObject[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingList, setLoadingList] = useState(false)
+  const [loadingDetails, setLoadingDetails] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedComp, setSelectedComp] = useState<
     MarketCompAttributes[] | null
@@ -34,33 +42,34 @@ export const PricingCultureProvider: React.FC<{
   useEffect(() => {
     const fetchMarketComps = async () => {
       if (!client) return
+      setLoadingList(true)
       try {
         const response = await client.get(
           `/proxy/pricing-culture/api/data/dailycomps`
         )
         setMarketComps(response.data.objects)
-        setLoading(false)
+        setLoadingList(false)
       } catch (err) {
         setError("Failed to fetch market comps")
-        setLoading(false)
+        setLoadingList(false)
       }
     }
     fetchMarketComps()
   }, [client])
 
   const fetchCompDetails = async (id: string, from: string, to: string) => {
-    if (!client) return
-    setLoading(true)
+    if (!client || loadingDetails) return
+    setLoadingDetails(true)
     setError(null)
     try {
       const response = await client.get(
         `/proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`
       )
       setSelectedComp(response.data.objects)
-      setLoading(false)
+      setLoadingDetails(false)
     } catch (err) {
       setError("Failed to fetch comp details")
-      setLoading(false)
+      setLoadingDetails(false)
     }
   }
 
@@ -68,7 +77,7 @@ export const PricingCultureProvider: React.FC<{
     <PricingCultureContext.Provider
       value={{
         marketComps,
-        loading,
+        loading: loadingList || loadingDetails,
         error,
         selectedComp,
         fetchCompDetails,
@@ -102,12 +111,24 @@ export const useSelectedComp = ({
   meta: MarketCompObject | null
   data: MarketCompAttributes[] | null
 } => {
+  const init = useRef(false)
+  const router = useRouter()
   const client = useSkyfireAPIClient()
   const { marketComps, selectedComp, fetchCompDetails } = usePricingCulture()
 
   useEffect(() => {
-    if (id && client) {
-      fetchCompDetails(id, from, to)
+    if (id && client && !init.current) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+      const diffTime = Math.abs(toDate.getTime() - fromDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays > 31) {
+        router.push("/")
+      } else {
+        init.current = true
+        fetchCompDetails(id, from, to)
+      }
     }
   }, [id, client])
 

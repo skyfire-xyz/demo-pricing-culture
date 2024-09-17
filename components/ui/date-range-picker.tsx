@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 "use client"
 
 import React, { useEffect, useRef, useState, type FC } from "react"
@@ -60,14 +59,10 @@ const formatDate = (date: Date, locale: string = "en-us"): string => {
 
 const getDateAdjustedForTimezone = (dateInput: Date | string): Date => {
   if (typeof dateInput === "string") {
-    // Split the date string to get year, month, and day parts
     const parts = dateInput.split("-").map((part) => parseInt(part, 10))
-    // Create a new Date object using the local timezone
-    // Note: Month is 0-indexed, so subtract 1 from the month part
     const date = new Date(parts[0], parts[1] - 1, parts[2])
     return date
   } else {
-    // If dateInput is already a Date object, return it directly
     return dateInput
   }
 }
@@ -82,7 +77,6 @@ interface Preset {
   label: string
 }
 
-// Define presets
 const PRESETS: Preset[] = [
   { name: "last7", label: "Last 7 days" },
   { name: "last14", label: "Last 14 days" },
@@ -93,7 +87,13 @@ const PRESETS: Preset[] = [
   { name: "lastMonth", label: "Last Month" },
 ]
 
-/** The DateRangePicker component allows a user to select a range of dates */
+const MAX_DATE_RANGE = 31 // Maximum allowed date range in days
+
+const getDaysDifference = (date1: Date, date2: Date): number => {
+  const diffTime = Math.abs(date2.getTime() - date1.getTime())
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+}
+
 export const DateRangePicker: FC<DateRangePickerProps> & {
   filePath: string
 } = ({
@@ -128,7 +128,6 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
       : undefined
   )
 
-  // Refs to store the values of range and rangeCompare when the date picker is opened
   const openedRangeRef = useRef<DateRange | undefined>()
   const openedRangeCompareRef = useRef<DateRange | undefined>()
 
@@ -140,6 +139,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     typeof window !== "undefined" ? window.innerWidth < 960 : false
   )
 
+  const [warningMessage, setWarningMessage] = useState<string | null>(null)
+
   useEffect(() => {
     const handleResize = (): void => {
       setIsSmallScreen(window.innerWidth < 960)
@@ -147,11 +148,23 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
     window.addEventListener("resize", handleResize)
 
-    // Clean up event listener on unmount
     return () => {
       window.removeEventListener("resize", handleResize)
     }
   }, [])
+
+  const setRangeWithLimit = (newRange: DateRange) => {
+    const daysDifference = getDaysDifference(
+      newRange.from,
+      newRange.to || newRange.from
+    )
+    if (daysDifference > MAX_DATE_RANGE) {
+      setWarningMessage(`Date range cannot exceed ${MAX_DATE_RANGE} days`)
+      return
+    }
+    setWarningMessage(null)
+    setRange(newRange)
+  }
 
   const getPresetRange = (presetName: string): DateRange => {
     const preset = PRESETS.find(({ name }) => name === presetName)
@@ -206,7 +219,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
   const setPreset = (preset: string): void => {
     const range = getPresetRange(preset)
-    setRange(range)
+    setRangeWithLimit(range)
     if (rangeCompare) {
       const rangeCompare = {
         from: new Date(
@@ -255,7 +268,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   }
 
   const resetValues = (): void => {
-    setRange({
+    setRangeWithLimit({
       from:
         typeof initialDateFrom === "string"
           ? getDateAdjustedForTimezone(initialDateFrom)
@@ -316,9 +329,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     </Button>
   )
 
-  // Helper function to check if two date ranges are equal
   const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
-    if (!a || !b) return a === b // If either is undefined, return true if both are undefined
+    if (!a || !b) return a === b
     return (
       a.from.getTime() === b.from.getTime() &&
       (!a.to || !b.to || a.to.getTime() === b.to.getTime())
@@ -349,7 +361,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                           onCheckedChange={(checked: boolean) => {
                             if (checked) {
                               if (!range.to) {
-                                setRange({
+                                setRangeWithLimit({
                                   from: range.from,
                                   to: range.from,
                                 })
@@ -390,11 +402,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                               range.to == null || date > range.to
                                 ? date
                                 : range.to
-                            setRange((prevRange) => ({
-                              ...prevRange,
-                              from: date,
-                              to: toDate,
-                            }))
+                            setRangeWithLimit({ from: date, to: toDate })
                           }}
                         />
                         <div className="py-1">-</div>
@@ -403,11 +411,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                           onChange={(date) => {
                             const fromDate =
                               date < range.from ? date : range.from
-                            setRange((prevRange) => ({
-                              ...prevRange,
-                              from: fromDate,
-                              to: date,
-                            }))
+                            setRangeWithLimit({ from: fromDate, to: date })
                           }}
                         />
                       </div>
@@ -422,11 +426,15 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                                   date > rangeCompare.to
                                     ? date
                                     : rangeCompare.to
-                                setRangeCompare((prevRangeCompare) => ({
-                                  ...prevRangeCompare,
-                                  from: date,
-                                  to: compareToDate,
-                                }))
+                                setRangeCompare((prevRangeCompare) =>
+                                  prevRangeCompare
+                                    ? {
+                                        ...prevRangeCompare,
+                                        from: date,
+                                        to: compareToDate,
+                                      }
+                                    : { from: date, to: date }
+                                )
                               } else {
                                 setRangeCompare({
                                   from: date,
@@ -482,7 +490,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                         value: { from?: Date; to?: Date } | undefined
                       ) => {
                         if (value?.from != null) {
-                          setRange({ from: value.from, to: value?.to })
+                          setRangeWithLimit({ from: value.from, to: value?.to })
                         }
                       }}
                       selected={range}
@@ -496,6 +504,11 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                       }
                     />
                   </div>
+                  {warningMessage && (
+                    <div className="text-red-500 text-sm mt-2">
+                      {warningMessage}
+                    </div>
+                  )}
                 </div>
               </div>
               {!isSmallScreen && (
@@ -527,6 +540,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
               }
               onSelect(range)
             }}
+            disabled={warningMessage !== null}
           >
             Select
           </Button>

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { useSelectedComp } from "@/lib/pricing-culture/context"
+import { formatDateWithoutTime } from "@/lib/utils"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -113,6 +114,9 @@ export default function DetailPage(props: {
             <TabsContent value={`${index}`}>
               <Card>
                 <CardContent>
+                  <CardTitle className="mt-6">
+                    Market data on {formatDateWithoutTime(asset.event_time)}
+                  </CardTitle>
                   <Chart
                     numItems={asset.number_of_constituents}
                     prices={asset.prices}

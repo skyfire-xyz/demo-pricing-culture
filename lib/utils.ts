@@ -21,3 +21,30 @@ export function formatPrice(value: string | number) {
   })
   return `$${price}`
 }
+
+type DateFormatOptions = {
+  year: "numeric" | "2-digit"
+  month: "numeric" | "2-digit" | "long" | "short" | "narrow"
+  day: "numeric" | "2-digit"
+}
+
+export function formatDateWithoutTime(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date")
+    }
+
+    const options: DateFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }
+
+    return date.toLocaleDateString("en-US", options)
+  } catch (error) {
+    return "Invalid date format"
+  }
+}
