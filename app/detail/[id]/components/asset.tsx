@@ -28,6 +28,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 
+import { useSanitizeHTML } from "../hooks/use-sanitize-html"
 import Chart from "./chart"
 
 interface AssetProps {
@@ -35,6 +36,7 @@ interface AssetProps {
   price: string
 }
 export default function Asset({ asset, price }: AssetProps) {
+  const sanitizedDescription = useSanitizeHTML(asset?.description)
   return (
     <Card className="w-full h-[calc(100%-1.5rem)] flex flex-col">
       <CardHeader>
@@ -54,7 +56,7 @@ export default function Asset({ asset, price }: AssetProps) {
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <div className="flex-1 pb-4">
-          <CardDescription>{asset.description}</CardDescription>
+          <CardDescription>{sanitizedDescription}</CardDescription>
         </div>
         <div className="mt-auto">
           <Carousel className="w-[85%] mx-auto">
