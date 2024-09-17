@@ -90,16 +90,20 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
   async function fetchUserBlanace() {
     // fetUserBalance
     if (apiClient) {
-      const res = await apiClient.get("/v1/wallet/balance")
-      dispatch(updateSkyfireWallet(res.data))
+      try {
+        const res = await apiClient.get("/v1/wallet/balance")
+        dispatch(updateSkyfireWallet(res.data))
+      } catch (e) {}
     }
   }
 
   async function fetchUserClaims() {
     // fetUserBalance
     if (apiClient) {
-      const res = await apiClient.get("/v1/wallet/claims")
-      dispatch(updateSkyfireClaims(res.data))
+      try {
+        const res = await apiClient.get("/v1/wallet/claims")
+        dispatch(updateSkyfireClaims(res.data))
+      } catch (e) {}
     }
   }
 

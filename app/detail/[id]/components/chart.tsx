@@ -1,15 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts"
+import { Bar, BarChart, CartesianGrid, YAxis } from "recharts"
 
 import { formatPrice } from "@/lib/utils"
 import {

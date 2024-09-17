@@ -4,7 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from "react"
 import axios from "axios"
 
 import { useSkyfireAPIClient } from "../skyfire-sdk/context/context"
-import { MarketCompObject } from "./type"
+import exampleData from "./example.json"
+import { DailyCompObject, MarketCompObject } from "./type"
 
 interface PricingCultureContextType {
   marketComps: MarketCompObject[]
@@ -12,6 +13,7 @@ interface PricingCultureContextType {
   error: string | null
   selectedComp: MarketCompObject | null
   fetchCompDetails: (id: string, from: string, to: string) => Promise<void>
+  exampleData: DailyCompObject[] | null
 }
 
 const PricingCultureContext = createContext<
@@ -64,7 +66,14 @@ export const PricingCultureProvider: React.FC<{
 
   return (
     <PricingCultureContext.Provider
-      value={{ marketComps, loading, error, selectedComp, fetchCompDetails }}
+      value={{
+        marketComps,
+        loading,
+        error,
+        selectedComp,
+        fetchCompDetails,
+        exampleData: exampleData || null,
+      }}
     >
       {children}
     </PricingCultureContext.Provider>
