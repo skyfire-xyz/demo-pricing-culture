@@ -1,22 +1,20 @@
-# next-template
+## Quick Start
 
-A Next.js 13 template for building apps with Radix UI and Tailwind CSS.
+1. **Clone the repository:**
 
-## Usage
+   ```bash
+   git clone git@github.com:skyfire-xyz/demo-pricing-culture.git
+   ```
 
-```bash
-npx create-next-app -e https://github.com/shadcn/next-template
-```
+2. **Install dependencies:**
 
-## Features
+   ```bash
+   yarn install
+   ```
 
-- Next.js 13 App Directory
-- Radix UI Primitives
-- Tailwind CSS
-- Icons from [Lucide](https://lucide.dev)
-- Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+3. **Run the development server:**
+   ```bash
+   yarn dev
+   ```
 
-## License
-
-Licensed under the [MIT license](https://github.com/shadcn/ui/blob/main/LICENSE.md).
+Your Next.js app should now be running on `http://localhost:3000`.
