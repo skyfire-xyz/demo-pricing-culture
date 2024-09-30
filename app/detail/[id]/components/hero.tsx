@@ -55,7 +55,7 @@ export default function Hero() {
               aria-hidden="true"
             />
             <MinMaxChart
-              title="Gucchi - Average Price"
+              title="Gucci - Average Price"
               from={"2024-09-08"}
               to={"2024-09-13"}
               data={exampleData}
