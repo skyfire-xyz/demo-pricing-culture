@@ -1,6 +1,4 @@
-// API
-
-import { AxiosError } from "axios"
+import { AxiosError, AxiosResponse } from "axios"
 
 type NetworkType =
   | "polygon_testnet"
@@ -89,4 +87,5 @@ export interface SkyfireState {
   claims: PaymentClaim[] | null
   loading?: boolean
   error: AxiosError | null
+  responses: AxiosResponse[]
 }

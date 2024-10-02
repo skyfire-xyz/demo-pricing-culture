@@ -12,69 +12,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { updateSkyfireAPIKey } from "../context/action"
 import { useSkyfire, useSkyfireState } from "../context/context"
 import { usdAmount } from "../util"
+import AIChatPanel from "./ai-chat-ui"
 import { ClaimsWidget } from "./claims"
 import LogoutButton from "./logout"
+import { WalletDetailsPanel } from "./tab-balance-details"
 
 export function WalletInterface() {
   const { wallet, balance, claims } = useSkyfireState()
-  const { dispatch, logout } = useSkyfire()
 
   return (
-    <Card className="skyfire-theme max-w-full md:max-w-[300px]">
+    <Card className="skyfire-theme max-w-full min-h-[50vh] flex flex-col">
       <CardHeader>
         <CardTitle>{usdAmount(balance?.escrow.available || "0")}</CardTitle>
         <CardDescription>{wallet?.walletAddress}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="claim-history">
+      <CardContent className="flex-1">
+        <Tabs defaultValue="claim-history" className="h-full">
           <TabsList className="">
             <TabsTrigger value="claim-history">Claim History</TabsTrigger>
             <TabsTrigger value="wallet-info">Wallet Details</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
-          <TabsContent value="wallet-info">
-            <div className="space-y-4 max-w-sm">
-              <div>
-                <h3 className="text-lg font-semibold">Wallet Details</h3>
-                <p>
-                  <strong>Name:</strong> {wallet?.walletName}
-                </p>
-                <p>
-                  <strong>Address:</strong> {wallet?.walletAddress}
-                </p>
-                <p>
-                  <strong>Network:</strong>{" "}
-                  {/* {getNetworkName(wallet?.network || "polygon_testnet")} */}
-                </p>
-                <p>
-                  <strong>Type:</strong> {wallet?.walletType}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Balance Details</h3>
-                <p>
-                  <strong>Total Escrow:</strong>{" "}
-                  {usdAmount(balance?.escrow.total || "0")}
-                </p>
-                <p>
-                  <strong>Available Escrow:</strong>{" "}
-                  {usdAmount(balance?.escrow.available || "0")}
-                </p>
-                <p>
-                  <strong>Allowance:</strong>{" "}
-                  {usdAmount(balance?.escrow.allowance || "0")}
-                </p>
-                <p>
-                  <strong>Native Balance:</strong>{" "}
-                  {usdAmount(balance?.native.balance || "0")}
-                </p>
-                <div className="mt-4">
-                  <LogoutButton onLogout={logout} />
-                </div>
-              </div>
+          <TabsContent value="wallet-info" className="h-full">
+            <div className="h-full overflow-y-auto">
+              <WalletDetailsPanel wallet={wallet} balance={balance} />
             </div>
           </TabsContent>
-          <TabsContent value="claim-history">
-            <ClaimsWidget claims={claims || []} />
+          <TabsContent value="claim-history" className="h-full">
+            <div className="h-full overflow-y-auto">
+              <ClaimsWidget claims={claims || []} />
+            </div>
+          </TabsContent>
+          <TabsContent value="chat" className="h-full">
+            <div className="h-full overflow-y-auto">
+              <AIChatPanel />
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

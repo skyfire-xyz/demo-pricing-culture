@@ -1,3 +1,5 @@
+import { AxiosResponse } from "axios"
+
 import { ActionType, SkyfireAction } from "./action"
 import { SkyfireState } from "./type"
 
@@ -9,6 +11,7 @@ export const initialState: SkyfireState = {
   claims: null,
   loading: false,
   error: null,
+  responses: [],
 }
 
 export const skyfireReducer = (
@@ -47,6 +50,11 @@ export const skyfireReducer = (
       return {
         ...state,
         error: action.payload,
+      }
+    case ActionType.ADD_RESPONSE:
+      return {
+        ...state,
+        responses: [...state.responses, action.payload],
       }
     default:
       return state

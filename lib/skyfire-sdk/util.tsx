@@ -3,6 +3,9 @@
  * @returns {boolean}
  */
 
+import { Message } from "ai"
+import { AxiosResponse } from "axios"
+
 const API_KEY_LOCAL_STORAGE_KEY = "skyfire_local_api_key"
 export const isLocalStorageSupported = () => {
   try {
@@ -62,4 +65,17 @@ export function usdAmount(usdc: number | string) {
   // Converts USDC to USD by dividing by 1,000,000
   const usdAmount = Number(usdc) / 1000000
   return "$" + usdAmount.toFixed(7) + " USD"
+}
+
+export function formatReponseToChatSystemData(
+  response: AxiosResponse
+): Message {
+  const message = `Response from ${
+    response.config.url
+  }<data-response>${JSON.stringify(response.data)}}`
+  return {
+    id: `claim-${response.config.url}`,
+    role: "system",
+    content: message,
+  }
 }

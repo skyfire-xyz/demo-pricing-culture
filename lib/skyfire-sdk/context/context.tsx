@@ -8,18 +8,19 @@ import React, {
   useMemo,
   useReducer,
 } from "react"
-import axios, { AxiosError, AxiosInstance, isAxiosError } from "axios"
+import axios, { AxiosInstance, AxiosResponse, isAxiosError } from "axios"
 
 import {
   SkyfireAction,
+  addResponse,
   loading,
   updateError,
   updateSkyfireAPIKey,
   updateSkyfireClaims,
   updateSkyfireWallet,
 } from "@/lib/skyfire-sdk/context/action"
-import { toast } from "@/components/hooks/use-toast"
 
+import { toast } from "../shadcn/hooks/use-toast"
 import {
   getApiKeyFromLocalStorage,
   removeApiKeyFromLocalStorage,
@@ -33,6 +34,7 @@ interface SkyfireContextType {
   dispatch: React.Dispatch<SkyfireAction>
   apiClient: AxiosInstance | null
   logout: () => void
+  pushResponse: (response: AxiosResponse) => void
 }
 
 const SkyfireContext = createContext<SkyfireContextType | undefined>(undefined)
@@ -73,11 +75,12 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
             fetchUserClaims()
 
             if (response.headers["skyfire-payment-amount"]) {
+              pushResponse(response)
               toast({
                 title: `Spent ${usdAmount(
                   response.headers["skyfire-payment-amount"]
                 )}`,
-                duration: 2000,
+                duration: 3000,
               })
             }
           }
@@ -87,6 +90,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
       (error) => {
         dispatch(loading(false))
         if (error.response && error.response.status === 401) {
+          // Handle unauthorized access
         }
         return Promise.reject(error)
       }
@@ -101,7 +105,6 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
   }, [])
 
   async function fetchUserBlanace() {
-    // fetUserBalance
     if (apiClient) {
       try {
         const res = await apiClient.get("/v1/wallet/balance")
@@ -115,7 +118,6 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
   }
 
   async function fetchUserClaims() {
-    // fetUserBalance
     if (apiClient) {
       try {
         const res = await apiClient.get("/v1/wallet/claims")
@@ -133,16 +135,21 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     dispatch(updateSkyfireAPIKey(null))
   }
 
+  function pushResponse(response: AxiosResponse) {
+    dispatch(addResponse(response))
+  }
+
   useEffect(() => {
     if (apiClient) {
-      // Fetch User Balance
       fetchUserBlanace()
       fetchUserClaims()
     }
   }, [apiClient])
 
   return (
-    <SkyfireContext.Provider value={{ state, dispatch, apiClient, logout }}>
+    <SkyfireContext.Provider
+      value={{ state, dispatch, apiClient, logout, pushResponse }}
+    >
       {children}
     </SkyfireContext.Provider>
   )
@@ -182,4 +189,9 @@ export const useSkyfireAPIClient = () => {
 export const useLoadingState = () => {
   const { state } = useSkyfire()
   return state?.loading
+}
+
+export const useSkyfireResponses = () => {
+  const { state } = useSkyfire()
+  return state?.responses
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import "./skyfire-theme.css"
 import React, { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
@@ -9,15 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ToastProvider } from "@/components/ui/toast"
-import { Toaster } from "@/components/ui/toaster"
 
 import {
   useLoadingState,
   useSkyfireAPIKey,
   useSkyfireState,
 } from "../context/context"
+import { Toaster } from "../shadcn/ui/toaster"
 import { usdAmount } from "../util"
 import { ApiKeyConfig } from "./api-key-config"
 import LoadingImageWidget from "./loadingImage"
