@@ -13,8 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-import { useSkyfireResponses } from "../context/context"
-import { formatReponseToChatSystemData } from "../util"
+import { useSkyfireAPIKey, useSkyfireResponses } from "../context/context"
+import { concatenateMessages, formatReponseToChatSystemData } from "../util"
 
 interface Message {
   id: number
@@ -23,8 +23,13 @@ interface Message {
 }
 
 export default function Component() {
+  const { localAPIKey } = useSkyfireAPIKey()
   const { messages, input, handleInputChange, handleSubmit, setMessages } =
-    useChat()
+    useChat({
+      headers: {
+        "skyfire-api-key": localAPIKey || "",
+      },
+    })
   const responses = useSkyfireResponses()
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -62,12 +67,11 @@ export default function Component() {
 
     updateHeight()
     window.addEventListener("resize", updateHeight)
-    //
-    setMessages(
-      responses.map((res) => {
-        return formatReponseToChatSystemData(res)
-      })
-    )
+
+    const messages = responses.map((res) => {
+      return formatReponseToChatSystemData(res)
+    })
+    setMessages(concatenateMessages(messages))
 
     return () => {
       window.removeEventListener("resize", updateHeight)
@@ -79,45 +83,56 @@ export default function Component() {
       <CardHeader></CardHeader>
       <CardContent className="flex-grow overflow-hidden p-0">
         <div ref={chatContainerRef} className="overflow-y-auto p-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              } mb-4`}
-            >
+          {messages
+            .filter((message) => {
+              if (
+                message.role === "system" &&
+                message.content.startsWith("<Chunk>")
+              )
+                return false
+              return true
+            })
+            .map((message) => (
               <div
+                key={message.id}
                 className={`flex ${
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
-                } items-start`}
+                  message.role === "user" ? "justify-end" : "justify-start"
+                } mb-4`}
               >
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback>
-                    {message.role === "user" ? "U" : "AI"}
-                  </AvatarFallback>
-                  <AvatarImage
-                    src={
-                      message.role === "user"
-                        ? "/user-avatar.png"
-                        : "/ai-avatar.png"
-                    }
-                    alt={message.role === "user" ? "User Avatar" : "AI Avatar"}
-                  />
-                </Avatar>
                 <div
-                  className={`mx-2 p-3 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
+                  className={`flex ${
+                    message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  } items-start`}
                 >
-                  {message.role === "system"
-                    ? message.content.split("<data-response>")[0]
-                    : message.content}
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback>
+                      {message.role === "user" ? "U" : "AI"}
+                    </AvatarFallback>
+                    <AvatarImage
+                      src={
+                        message.role === "user"
+                          ? "/user-avatar.png"
+                          : "/ai-avatar.png"
+                      }
+                      alt={
+                        message.role === "user" ? "User Avatar" : "AI Avatar"
+                      }
+                    />
+                  </Avatar>
+                  <div
+                    className={`mx-2 p-3 rounded-lg ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {message.role === "system"
+                      ? message.content.split("<data-response>")[0]
+                      : message.content}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </CardContent>
       <CardFooter className="p-4">

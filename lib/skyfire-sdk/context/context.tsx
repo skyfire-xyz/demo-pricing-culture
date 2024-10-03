@@ -67,15 +67,17 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     // Response interceptor
     instance.interceptors.response.use(
       async (response) => {
+        if (response.config.url?.includes("proxy")) {
+          pushResponse(response)
+        }
+
         // Can Process Payment Here
         setTimeout(() => {
           dispatch(loading(false))
           if (response.headers["skyfire-payment-reference-id"]) {
             fetchUserBlanace()
             fetchUserClaims()
-
             if (response.headers["skyfire-payment-amount"]) {
-              pushResponse(response)
               toast({
                 title: `Spent ${usdAmount(
                   response.headers["skyfire-payment-amount"]

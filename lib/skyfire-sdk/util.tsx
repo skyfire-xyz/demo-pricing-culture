@@ -69,13 +69,62 @@ export function usdAmount(usdc: number | string) {
 
 export function formatReponseToChatSystemData(
   response: AxiosResponse
-): Message {
-  const message = `Response from ${
-    response.config.url
-  }<data-response>${JSON.stringify(response.data)}}`
-  return {
+): Message[] {
+  const originalMessageObj: Message = {
     id: `claim-${response.config.url}`,
     role: "system",
-    content: message,
+    content: `Response from ${response.config.url}`,
   }
+
+  const chunkedContent = chunkMessages([
+    {
+      role: "system",
+      content: JSON.stringify(response.data),
+    } as Message,
+  ])
+
+  const chunkedMessages: Message[] = chunkedContent.map((chunk, index) => ({
+    id: `claim-${response.config.url}-chunk-${index + 1}`,
+    role: "system",
+    content: chunk.content,
+  }))
+
+  return [originalMessageObj, ...chunkedMessages]
+}
+
+const CHUNK_SIZE = 5000 // Adjust this value based on your needs and model limits
+
+type Role = "system" | "user" | "assistant"
+
+export function chunkMessages(messages: Message[]): Message[] {
+  const chunkedMessages: Message[] = []
+
+  for (const message of messages) {
+    if (message.content.length > CHUNK_SIZE) {
+      // If a single message is larger than CHUNK_SIZE, split it
+      const contentChunks = chunkContent(message.content)
+      for (const chunk of contentChunks) {
+        chunkedMessages.push({
+          role: message.role,
+          content: `<Chunk> ${chunk}`,
+        })
+      }
+    } else {
+      chunkedMessages.push(message)
+    }
+  }
+
+  return chunkedMessages
+}
+
+function chunkContent(content: string): string[] {
+  const chunks: string[] = []
+  for (let i = 0; i < content.length; i += CHUNK_SIZE) {
+    chunks.push(content.slice(i, i + CHUNK_SIZE))
+  }
+  return chunks
+}
+
+export function concatenateMessages(messageGroups: Message[][]): Message[] {
+  return messageGroups.reduce((acc, group) => acc.concat(group), [])
 }
