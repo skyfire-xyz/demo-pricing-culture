@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useChat } from "ai/react"
+import { AxiosResponse } from "axios"
+import { ChevronDown } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -14,30 +16,45 @@ import {
 } from "@/components/ui/card"
 
 import { useSkyfireAPIKey, useSkyfireResponses } from "../context/context"
-import { concatenateMessages, formatReponseToChatSystemData } from "../util"
+import { useMessageHandler } from "../hooks"
+import { MemoizedReactMarkdown } from "./markdown"
 
-interface Message {
-  id: number
-  content: string
-  sender: "user" | "ai"
+interface AIChatPanelProps {
+  aiChatProps: any
 }
 
-export default function Component() {
+export default function Component({ aiChatProps }: AIChatPanelProps) {
   const { localAPIKey } = useSkyfireAPIKey()
-  const { messages, input, handleInputChange, handleSubmit, setMessages } =
-    useChat({
-      headers: {
-        "skyfire-api-key": localAPIKey || "",
-      },
-    })
+
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    setMessages,
+    isLoading,
+  } = aiChatProps
+
   const responses = useSkyfireResponses()
+  useMessageHandler(responses, messages, setMessages)
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  const [showScrollButton, setShowScrollButton] = useState(false)
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current
+      const bottomThreshold = 100
+      setShowScrollButton(
+        scrollHeight - scrollTop - clientHeight > bottomThreshold
+      )
     }
   }
 
@@ -46,43 +63,26 @@ export default function Component() {
   }, [messages])
 
   useEffect(() => {
-    const updateHeight = () => {
-      if (cardRef.current && chatContainerRef.current) {
-        const windowHeight = window.innerHeight
-        const cardRect = cardRef.current.getBoundingClientRect()
-        const headerHeight =
-          cardRef.current.querySelector('div[class*="CardHeader"]')
-            ?.clientHeight || 0
-        const footerHeight =
-          cardRef.current.querySelector('div[class*="CardFooter"]')
-            ?.clientHeight || 0
-
-        const maxCardHeight = windowHeight - cardRect.top - 20 // 20px buffer
-        const chatContainerHeight = maxCardHeight - headerHeight - footerHeight
-
-        cardRef.current.style.height = `${maxCardHeight}px`
-        chatContainerRef.current.style.height = `${chatContainerHeight}px`
-      }
-    }
-
-    updateHeight()
-    window.addEventListener("resize", updateHeight)
-
-    const messages = responses.map((res) => {
-      return formatReponseToChatSystemData(res)
-    })
-    setMessages(concatenateMessages(messages))
-
-    return () => {
-      window.removeEventListener("resize", updateHeight)
+    const chatContainer = chatContainerRef.current
+    if (chatContainer) {
+      chatContainer.addEventListener("scroll", handleScroll)
+      return () => chatContainer.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
   return (
-    <Card className="w-full max-w-lg mx-auto flex flex-col" ref={cardRef}>
-      <CardHeader></CardHeader>
-      <CardContent className="flex-grow overflow-hidden p-0">
-        <div ref={chatContainerRef} className="overflow-y-auto p-4">
+    <Card
+      className="w-full mx-auto flex flex-col h-[calc(100vh-380px)]"
+      ref={cardRef}
+    >
+      <CardHeader className="flex-shrink-0 h-16">
+        <CardTitle>AI Agent</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow overflow-hidden p-0 relative">
+        <div
+          ref={chatContainerRef}
+          className="h-full overflow-y-scroll overflow-x-hidden p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+        >
           {messages
             .filter((message) => {
               if (
@@ -100,11 +100,11 @@ export default function Component() {
                 } mb-4`}
               >
                 <div
-                  className={`flex ${
+                  className={`flex max-w-[100%] ${
                     message.role === "user" ? "flex-row-reverse" : "flex-row"
                   } items-start`}
                 >
-                  <Avatar className="w-8 h-8">
+                  <Avatar className="w-8 h-8 flex-shrink-0">
                     <AvatarFallback>
                       {message.role === "user" ? "U" : "AI"}
                     </AvatarFallback>
@@ -123,19 +123,49 @@ export default function Component() {
                     className={`mx-2 p-3 rounded-lg ${
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
+                        : "max-w-[calc(100%-50px)] bg-muted"
+                    } break-words`}
                   >
-                    {message.role === "system"
-                      ? message.content.split("<data-response>")[0]
-                      : message.content}
+                    <MemoizedReactMarkdown>
+                      {message.role === "system"
+                        ? message.content.split("<data-response>")[0]
+                        : message.content}
+                    </MemoizedReactMarkdown>
                   </div>
                 </div>
               </div>
             ))}
+          {isLoading && (
+            <div className="flex justify-start items-start mb-4">
+              <div className="flex items-start">
+                <Avatar className="w-8 h-8 flex-shrink-0">
+                  <AvatarFallback>AI</AvatarFallback>
+                  <AvatarImage
+                    src="/ai-avatar.png"
+                    alt="AI Avatar"
+                    className="animate-pulse"
+                  />
+                </Avatar>
+                <div className="mx-2 p-3 rounded-lg bg-muted max-w-[calc(100%-50px)]">
+                  <span className="inline-block animate-pulse">
+                    Thinking<span className="dots">...</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+        {showScrollButton && (
+          <Button
+            className="absolute bottom-4 right-4 rounded-full p-2"
+            onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        )}
       </CardContent>
-      <CardFooter className="p-4">
+      <CardFooter className="p-4 flex-shrink-0 h-20">
         <form onSubmit={handleSubmit} className="flex gap-2 w-full">
           <input
             className="flex-grow max-w-md p-2 border rounded bg-white"
@@ -143,7 +173,9 @@ export default function Component() {
             placeholder="Say something..."
             onChange={handleInputChange}
           />
-          <Button type="submit">Send</Button>
+          <Button type="submit" disabled={isLoading}>
+            Send
+          </Button>
         </form>
       </CardFooter>
     </Card>

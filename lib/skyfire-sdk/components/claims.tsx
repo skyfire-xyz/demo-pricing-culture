@@ -2,6 +2,13 @@ import React, { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
@@ -47,28 +54,37 @@ export function ClaimsWidget({ claims }: ClaimsWidgetProps) {
   }
 
   return (
-    <div className="w-full max-w-sm mx-auto bg-background rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Destination</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedClaims.map((claim) => (
-            <TableRow key={claim.id}>
-              <TableCell className="font-medium">
-                {claim.destinationName}
-              </TableCell>
-              <TableCell>{usdAmount(claim.value)}</TableCell>
-              <TableCell>{formatDate(claim.createdAt)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex items-center justify-between px-4 py-3 mt-4">
+    <Card className="w-full flex-grow">
+      <CardHeader>
+        <CardTitle>Claims</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-full">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Destination</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedClaims.map((claim) => (
+                <TableRow key={claim.id}>
+                  <TableCell className="font-medium">
+                    {claim.destinationName}
+                  </TableCell>
+                  <TableCell>{usdAmount(claim.value)}</TableCell>
+                  <TableCell className="text-right">
+                    {formatDate(claim.createdAt)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </CardContent>
+      <CardFooter className="flex items-center justify-between p-4">
         <Button
           variant="outline"
           size="sm"
@@ -92,7 +108,7 @@ export function ClaimsWidget({ claims }: ClaimsWidgetProps) {
           Next
           <ChevronRight className="h-4 w-4 ml-2" />
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }

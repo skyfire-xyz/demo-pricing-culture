@@ -17,35 +17,37 @@ import { ClaimsWidget } from "./claims"
 import LogoutButton from "./logout"
 import { WalletDetailsPanel } from "./tab-balance-details"
 
-export function WalletInterface() {
+interface WalletInterfaceProps {
+  aiChatProps: any
+}
+export function WalletInterface({ aiChatProps }: WalletInterfaceProps) {
   const { wallet, balance, claims } = useSkyfireState()
 
   return (
-    <Card className="skyfire-theme max-w-full min-h-[50vh] flex flex-col">
+    <Card className="skyfire-theme max-w-full h-[calc(100vh-200px)] flex flex-col">
       <CardHeader>
         <CardTitle>{usdAmount(balance?.escrow.available || "0")}</CardTitle>
         <CardDescription>{wallet?.walletAddress}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
-        <Tabs defaultValue="claim-history" className="h-full">
+        <Tabs defaultValue="wallet-info" className="h-full">
           <TabsList className="">
-            <TabsTrigger value="claim-history">Claim History</TabsTrigger>
             <TabsTrigger value="wallet-info">Wallet Details</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
-          <TabsContent value="wallet-info" className="h-full">
-            <div className="h-full overflow-y-auto">
-              <WalletDetailsPanel wallet={wallet} balance={balance} />
-            </div>
+          <TabsContent
+            value="wallet-info"
+            className="h-[calc(100%-50px)] flex flex-col gap-6 data-[state=inactive]:hidden"
+          >
+            <WalletDetailsPanel wallet={wallet} balance={balance} />
+            <ClaimsWidget claims={claims || []} />
           </TabsContent>
-          <TabsContent value="claim-history" className="h-full">
+          <TabsContent
+            value="chat"
+            className="h-full data-[state=inactive]:hidden"
+          >
             <div className="h-full overflow-y-auto">
-              <ClaimsWidget claims={claims || []} />
-            </div>
-          </TabsContent>
-          <TabsContent value="chat" className="h-full">
-            <div className="h-full overflow-y-auto">
-              <AIChatPanel />
+              <AIChatPanel aiChatProps={aiChatProps} />
             </div>
           </TabsContent>
         </Tabs>

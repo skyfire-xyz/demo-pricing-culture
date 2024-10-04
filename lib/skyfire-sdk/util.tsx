@@ -68,26 +68,43 @@ export function usdAmount(usdc: number | string) {
 }
 
 export function formatReponseToChatSystemData(
-  response: AxiosResponse
+  response: AxiosResponse,
+  existingMessages: Message[]
 ): Message[] {
+  const messageId = `claim-${response.config.url}`
+
+  // Check if the message already exists
+  const messageExists = existingMessages.some((msg) => msg.id === messageId)
+  if (messageExists) {
+    return [] // Return an empty array if the message already exists
+  }
+
   const originalMessageObj: Message = {
-    id: `claim-${response.config.url}`,
+    id: messageId,
     role: "system",
     content: `Response from ${response.config.url}`,
   }
 
-  const chunkedContent = chunkMessages([
+  const chunkedMessages: Message[] = [
     {
+      id: `${messageId}-chunk-0`,
       role: "system",
-      content: JSON.stringify(response.data),
+      content: `<Chunk>${JSON.stringify(response.data)}`,
     } as Message,
-  ])
+  ]
 
-  const chunkedMessages: Message[] = chunkedContent.map((chunk, index) => ({
-    id: `claim-${response.config.url}-chunk-${index + 1}`,
-    role: "system",
-    content: chunk.content,
-  }))
+  // const chunkedContent = chunkMessages([
+  //   {
+  //     role: "system",
+  //     content: JSON.stringify(response.data),
+  //   } as Message,
+  // ])
+
+  // const chunkedMessages: Message[] = chunkedContent.map((chunk, index) => ({
+  //   id: `claim-${response.config.url}-chunk-${index + 1}`,
+  //   role: "system",
+  //   content: chunk.content,
+  // }))
 
   return [originalMessageObj, ...chunkedMessages]
 }
