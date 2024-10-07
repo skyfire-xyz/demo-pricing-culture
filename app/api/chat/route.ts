@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server"
 import { OpenAIStream, StreamingTextResponse, convertToCoreMessages } from "ai"
 
 import { SKYFIRE_ENDPOINT_URL } from "@/lib/skyfire-sdk/env"
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
   const { messages } = req
 
   if (!apiKey) {
-    return Response.json({ message: "Missing API Key" }, { status: 401 })
+    return NextResponse.json({ message: "Missing API Key" }, { status: 401 })
   }
 
   const streamResponse = await fetch(
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   )
 
   if (!streamResponse.ok) {
-    return Response.json(
+    return NextResponse.json(
       { message: "API request failed" },
       { status: streamResponse.status }
     )
