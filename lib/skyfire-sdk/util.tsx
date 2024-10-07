@@ -3,6 +3,9 @@
  * @returns {boolean}
  */
 
+import { Message } from "ai"
+import { AxiosResponse } from "axios"
+
 const API_KEY_LOCAL_STORAGE_KEY = "skyfire_local_api_key"
 export const isLocalStorageSupported = () => {
   try {
@@ -63,3 +66,90 @@ export function usdAmount(usdc: number | string) {
   const usdAmount = Number(usdc) / 1000000
   return "$" + usdAmount.toFixed(7) + " USD"
 }
+
+export function formatReponseToChatSystemData(
+  response: AxiosResponse,
+  existingMessages: Message[]
+): Message[] {
+  const messageId = `claim-${response.config.url}`
+
+  // Check if the message already exists
+  const messageExists = existingMessages.some((msg) => msg.id === messageId)
+  if (messageExists) {
+    return [] // Return an empty array if the message already exists
+  }
+
+  const originalMessageObj: Message = {
+    id: messageId,
+    role: "system",
+    content: `${
+      response.config.metadata?.title || `Response from ${response.config.url}`
+    } attached.`,
+  }
+
+  const chunkedMessages: Message[] = [
+    {
+      id: `${messageId}-chunk-0`,
+      role: "system",
+      content: `<Chunk>This is the JSON data from the API "${
+        response.config.metadata?.title || ""
+      }" response ${
+        response.config.url
+      }. Please answer my questions based on this data [Data]"${JSON.stringify(
+        response.data
+      )}[/Data]. When you answer the questions, don't use JSON format directly`,
+    } as Message,
+  ]
+
+  // const chunkedContent = chunkMessages([
+  //   {
+  //     role: "system",
+  //     content: JSON.stringify(response.data),
+  //   } as Message,
+  // ])
+
+  // const chunkedMessages: Message[] = chunkedContent.map((chunk, index) => ({
+  //   id: `claim-${response.config.url}-chunk-${index + 1}`,
+  //   role: "system",
+  //   content: chunk.content,
+  // }))
+
+  return [originalMessageObj, ...chunkedMessages]
+}
+
+export function concatenateMessages(messageGroups: Message[][]): Message[] {
+  return messageGroups.reduce((acc, group) => acc.concat(group), [])
+}
+
+// const CHUNK_SIZE = 5000 // Adjust this value based on your needs and model limits
+
+// type Role = "system" | "user" | "assistant"
+
+// export function chunkMessages(messages: Message[]): Message[] {
+//   const chunkedMessages: Message[] = []
+
+//   for (const message of messages) {
+//     if (message.content.length > CHUNK_SIZE) {
+//       // If a single message is larger than CHUNK_SIZE, split it
+//       const contentChunks = chunkContent(message.content)
+//       for (const chunk of contentChunks) {
+//         chunkedMessages.push({
+//           role: message.role,
+//           content: `<Chunk> ${chunk}`,
+//         })
+//       }
+//     } else {
+//       chunkedMessages.push(message)
+//     }
+//   }
+
+//   return chunkedMessages
+// }
+
+// function chunkContent(content: string): string[] {
+//   const chunks: string[] = []
+//   for (let i = 0; i < content.length; i += CHUNK_SIZE) {
+//     chunks.push(content.slice(i, i + CHUNK_SIZE))
+//   }
+//   return chunks
+// }

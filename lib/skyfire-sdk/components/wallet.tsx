@@ -1,4 +1,5 @@
 import React from "react"
+import { UseChatHelpers } from "ai/react/dist"
 
 import {
   Card,
@@ -12,69 +13,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { updateSkyfireAPIKey } from "../context/action"
 import { useSkyfire, useSkyfireState } from "../context/context"
 import { usdAmount } from "../util"
+import AIChatPanel from "./ai-chat-ui"
 import { ClaimsWidget } from "./claims"
 import LogoutButton from "./logout"
+import { WalletDetailsPanel } from "./tab-balance-details"
 
-export function WalletInterface() {
+interface WalletInterfaceProps {
+  aiChatProps: UseChatHelpers
+}
+export function WalletInterface({ aiChatProps }: WalletInterfaceProps) {
   const { wallet, balance, claims } = useSkyfireState()
-  const { dispatch, logout } = useSkyfire()
 
   return (
-    <Card className="skyfire-theme max-w-full md:max-w-[300px]">
+    <Card className="skyfire-theme max-w-full h-[calc(100vh-200px)] flex flex-col">
       <CardHeader>
         <CardTitle>{usdAmount(balance?.escrow.available || "0")}</CardTitle>
         <CardDescription>{wallet?.walletAddress}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="claim-history">
+      <CardContent className="flex-1">
+        <Tabs defaultValue="wallet-info" className="h-full">
           <TabsList className="">
-            <TabsTrigger value="claim-history">Claim History</TabsTrigger>
             <TabsTrigger value="wallet-info">Wallet Details</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
-          <TabsContent value="wallet-info">
-            <div className="space-y-4 max-w-sm">
-              <div>
-                <h3 className="text-lg font-semibold">Wallet Details</h3>
-                <p>
-                  <strong>Name:</strong> {wallet?.walletName}
-                </p>
-                <p>
-                  <strong>Address:</strong> {wallet?.walletAddress}
-                </p>
-                <p>
-                  <strong>Network:</strong>{" "}
-                  {/* {getNetworkName(wallet?.network || "polygon_testnet")} */}
-                </p>
-                <p>
-                  <strong>Type:</strong> {wallet?.walletType}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Balance Details</h3>
-                <p>
-                  <strong>Total Escrow:</strong>{" "}
-                  {usdAmount(balance?.escrow.total || "0")}
-                </p>
-                <p>
-                  <strong>Available Escrow:</strong>{" "}
-                  {usdAmount(balance?.escrow.available || "0")}
-                </p>
-                <p>
-                  <strong>Allowance:</strong>{" "}
-                  {usdAmount(balance?.escrow.allowance || "0")}
-                </p>
-                <p>
-                  <strong>Native Balance:</strong>{" "}
-                  {usdAmount(balance?.native.balance || "0")}
-                </p>
-                <div className="mt-4">
-                  <LogoutButton onLogout={logout} />
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="claim-history">
+          <TabsContent
+            value="wallet-info"
+            className="h-[calc(100%-50px)] flex flex-col gap-6 data-[state=inactive]:hidden"
+          >
+            <WalletDetailsPanel wallet={wallet} balance={balance} />
             <ClaimsWidget claims={claims || []} />
+          </TabsContent>
+          <TabsContent
+            value="chat"
+            className="h-full data-[state=inactive]:hidden"
+          >
+            <div className="h-full overflow-y-auto">
+              <AIChatPanel aiChatProps={aiChatProps} />
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

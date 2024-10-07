@@ -1,6 +1,8 @@
 "use client"
 
+import "./skyfire-theme.css"
 import React, { useEffect, useState } from "react"
+import { useChat } from "ai/react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog"
@@ -9,15 +11,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ToastProvider } from "@/components/ui/toast"
-import { Toaster } from "@/components/ui/toaster"
 
 import {
   useLoadingState,
+  useSkyfire,
   useSkyfireAPIKey,
   useSkyfireState,
 } from "../context/context"
+import { Toaster } from "../shadcn/ui/toaster"
 import { usdAmount } from "../util"
 import { ApiKeyConfig } from "./api-key-config"
 import LoadingImageWidget from "./loadingImage"
@@ -25,6 +26,19 @@ import { WalletInterface } from "./wallet"
 
 export default function SkyfireWidget() {
   const { localAPIKey, isReady } = useSkyfireAPIKey()
+  const { getClaimByReferenceID } = useSkyfire()
+  const aiChatProps = useChat({
+    headers: {
+      "skyfire-api-key": localAPIKey || "",
+    },
+    onResponse: (response: Response) => {
+      const paymentReferenceId = response.headers.get(
+        "skyfire-payment-reference-id"
+      )
+      getClaimByReferenceID(paymentReferenceId)
+    },
+  })
+
   const { error } = useSkyfireState()
 
   const loading = useLoadingState()
@@ -110,11 +124,11 @@ export default function SkyfireWidget() {
               </motion.div>
             </PopoverTrigger>
             <PopoverContent
-              className="max-w-[500px] w-[500px] bg-transparent border-none p-0"
+              className="max-w-[800px] w-[800px] bg-transparent border-none p-0"
               align="end"
               side="top"
             >
-              <WalletInterface />
+              <WalletInterface aiChatProps={aiChatProps} />
             </PopoverContent>
           </Popover>
         )}

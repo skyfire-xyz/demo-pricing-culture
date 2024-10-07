@@ -45,7 +45,12 @@ export const PricingCultureProvider: React.FC<{
       setLoadingList(true)
       try {
         const response = await client.get(
-          `/proxy/pricing-culture/api/data/dailycomps`
+          `/proxy/pricing-culture/api/data/dailycomps`,
+          {
+            metadata: {
+              title: `Daily Comps`,
+            },
+          }
         )
         setMarketComps(response.data.objects)
         setLoadingList(false)
@@ -63,7 +68,30 @@ export const PricingCultureProvider: React.FC<{
     setError(null)
     try {
       const response = await client.get(
-        `/proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`
+        `/proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`,
+        {
+          metadata: {
+            title: `Snapshots between ${from} to ${to}`,
+            useWithChat: true,
+            customizeResponseForAIChat: (response) => {
+              const customizedObjects = response.data.objects.map(
+                (arr: any) => {
+                  return {
+                    ...arr,
+                    prices: [],
+                  }
+                }
+              )
+              return {
+                ...response,
+                data: {
+                  ...response.data,
+                  objects: customizedObjects,
+                },
+              }
+            },
+          },
+        }
       )
       setSelectedComp(response.data.objects)
       setLoadingDetails(false)
