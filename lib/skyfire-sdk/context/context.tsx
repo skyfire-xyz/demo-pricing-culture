@@ -29,6 +29,15 @@ import {
 import { initialState, skyfireReducer } from "./reducer"
 import { SkyfireState } from "./type"
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    metadata?: {
+      title?: string
+      useWithChat?: boolean
+      customizeResponseForAIChat?: (response: AxiosResponse) => AxiosResponse
+    }
+  }
+}
 interface SkyfireContextType {
   state: SkyfireState
   dispatch: React.Dispatch<SkyfireAction>
@@ -36,6 +45,12 @@ interface SkyfireContextType {
   logout: () => void
   pushResponse: (response: AxiosResponse) => void
   getClaimByReferenceID: (referenceId: string | null) => Promise<boolean>
+}
+
+export const getItemNamesFromResponse = (response: AxiosResponse): string => {
+  const config = response.config
+  const title = config.metadata?.title || config.url || "Unknown"
+  return title
 }
 
 const SkyfireContext = createContext<SkyfireContextType | undefined>(undefined)
@@ -68,8 +83,22 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     // Response interceptor
     instance.interceptors.response.use(
       async (response) => {
-        if (response.config.url?.includes("proxy")) {
-          pushResponse(response)
+        if (
+          response.config.url?.includes("proxy") &&
+          response.config.metadata?.useWithChat
+        ) {
+          if (response.config.metadata?.customizeResponseForAIChat) {
+            console.log(
+              response.config.metadata?.customizeResponseForAIChat(response),
+              "response.config.metadata?.customizeResponseForAIChat(response)"
+            )
+
+            pushResponse(
+              response.config.metadata?.customizeResponseForAIChat(response)
+            )
+          } else {
+            pushResponse(response)
+          }
         }
 
         // Can Process Payment Here

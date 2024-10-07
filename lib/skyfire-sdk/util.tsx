@@ -82,14 +82,22 @@ export function formatReponseToChatSystemData(
   const originalMessageObj: Message = {
     id: messageId,
     role: "system",
-    content: `Response from ${response.config.url}`,
+    content: `${
+      response.config.metadata?.title || `Response from ${response.config.url}`
+    } attached.`,
   }
 
   const chunkedMessages: Message[] = [
     {
       id: `${messageId}-chunk-0`,
       role: "system",
-      content: `<Chunk>${JSON.stringify(response.data)}`,
+      content: `<Chunk>This is the JSON data from the API "${
+        response.config.metadata?.title || ""
+      }" response ${
+        response.config.url
+      }. Please answer my questions based on this data [Data]"${JSON.stringify(
+        response.data
+      )}[/Data]. When you answer the questions, don't use JSON format directly`,
     } as Message,
   ]
 
