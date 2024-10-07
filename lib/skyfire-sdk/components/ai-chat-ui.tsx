@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useChat } from "ai/react"
+import { UseChatHelpers, useChat } from "ai/react"
 import { AxiosResponse } from "axios"
 import { ChevronDown } from "lucide-react"
 
@@ -20,7 +20,7 @@ import { useMessageHandler } from "../hooks"
 import { MemoizedReactMarkdown } from "./markdown"
 
 interface AIChatPanelProps {
-  aiChatProps: any
+  aiChatProps: UseChatHelpers
 }
 
 export default function Component({ aiChatProps }: AIChatPanelProps) {

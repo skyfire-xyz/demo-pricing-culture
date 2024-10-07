@@ -35,6 +35,7 @@ interface SkyfireContextType {
   apiClient: AxiosInstance | null
   logout: () => void
   pushResponse: (response: AxiosResponse) => void
+  getClaimByReferenceID: (referenceId: string | null) => Promise<boolean>
 }
 
 const SkyfireContext = createContext<SkyfireContextType | undefined>(undefined)
@@ -75,7 +76,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
         setTimeout(() => {
           dispatch(loading(false))
           if (response.headers["skyfire-payment-reference-id"]) {
-            fetchUserBlanace()
+            fetchUserBalance()
             fetchUserClaims()
             if (response.headers["skyfire-payment-amount"]) {
               toast({
@@ -106,7 +107,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     dispatch(updateSkyfireAPIKey(apiKey))
   }, [])
 
-  async function fetchUserBlanace() {
+  async function fetchUserBalance() {
     if (apiClient) {
       try {
         const res = await apiClient.get("/v1/wallet/balance")
@@ -132,6 +133,30 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     }
   }
 
+  async function getClaimByReferenceID(referenceId: string | null) {
+    if (!referenceId || !apiClient) {
+      return false
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+      const res = await apiClient.get(
+        `v1/wallet/claimByReferenceId/${referenceId}`
+      )
+
+      if (res.status < 400) {
+        toast({
+          title: `Spent ${usdAmount(res.data.value)}`,
+          duration: 3000,
+        })
+        return true
+      }
+    } catch (error) {
+      console.error("Error fetching claim:", error)
+    }
+
+    return false
+  }
+
   function logout() {
     removeApiKeyFromLocalStorage()
     dispatch(updateSkyfireAPIKey(null))
@@ -143,14 +168,21 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     if (apiClient) {
-      fetchUserBlanace()
+      fetchUserBalance()
       fetchUserClaims()
     }
   }, [apiClient])
 
   return (
     <SkyfireContext.Provider
-      value={{ state, dispatch, apiClient, logout, pushResponse }}
+      value={{
+        state,
+        dispatch,
+        apiClient,
+        logout,
+        pushResponse,
+        getClaimByReferenceID,
+      }}
     >
       {children}
     </SkyfireContext.Provider>

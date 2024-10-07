@@ -5,7 +5,7 @@ import { SKYFIRE_ENDPOINT_URL } from "@/lib/skyfire-sdk/env"
 export async function POST(request: Request) {
   const req = await request.json()
   const apiKey = request.headers.get("skyfire-api-key")
-  const { messages, model, chatType } = req
+  const { messages } = req
 
   if (!apiKey) {
     return Response.json({ message: "Missing API Key" }, { status: 401 })
@@ -35,8 +35,24 @@ export async function POST(request: Request) {
   }
 
   if (streamResponse.body) {
-    // TODO: Figure out how to handle the stream response without
     const stream = OpenAIStream(streamResponse)
-    return new StreamingTextResponse(stream)
+    const transformStream = new TransformStream({
+      transform(chunk, controller) {
+        // Pass through the original chunk
+        controller.enqueue(chunk)
+      },
+    })
+    const modifiedStream = stream.pipeThrough(transformStream)
+    const response = new StreamingTextResponse(modifiedStream)
+
+    // Add any headers from the original streamResponse
+    const headerEntries = Array.from(streamResponse.headers.entries())
+    for (const [key, value] of headerEntries) {
+      if (key.toLowerCase().startsWith("skyfire-")) {
+        response.headers.set(key, value)
+      }
+    }
+
+    return response
   }
 }

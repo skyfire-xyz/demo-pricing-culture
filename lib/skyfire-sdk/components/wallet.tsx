@@ -1,4 +1,5 @@
 import React from "react"
+import { UseChatHelpers } from "ai/react/dist"
 
 import {
   Card,
@@ -18,7 +19,7 @@ import LogoutButton from "./logout"
 import { WalletDetailsPanel } from "./tab-balance-details"
 
 interface WalletInterfaceProps {
-  aiChatProps: any
+  aiChatProps: UseChatHelpers
 }
 export function WalletInterface({ aiChatProps }: WalletInterfaceProps) {
   const { wallet, balance, claims } = useSkyfireState()

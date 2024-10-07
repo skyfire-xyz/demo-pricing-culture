@@ -14,6 +14,7 @@ import {
 
 import {
   useLoadingState,
+  useSkyfire,
   useSkyfireAPIKey,
   useSkyfireState,
 } from "../context/context"
@@ -25,9 +26,16 @@ import { WalletInterface } from "./wallet"
 
 export default function SkyfireWidget() {
   const { localAPIKey, isReady } = useSkyfireAPIKey()
+  const { getClaimByReferenceID } = useSkyfire()
   const aiChatProps = useChat({
     headers: {
       "skyfire-api-key": localAPIKey || "",
+    },
+    onResponse: (response: Response) => {
+      const paymentReferenceId = response.headers.get(
+        "skyfire-payment-reference-id"
+      )
+      getClaimByReferenceID(paymentReferenceId)
     },
   })
 
