@@ -10,6 +10,7 @@ export enum ActionType {
   LOADING = "LOADING",
   UPDATE_ERROR = "UPDATE_ERROR",
   ADD_RESPONSE = "ADD_RESPONSE",
+  CLEAR_RESPONSES = "CLEAR_RESPONSES", // New action type
 }
 
 interface UpdateSkyfireInfoAction {
@@ -47,6 +48,10 @@ interface AddResponseAction {
   payload: AxiosResponse
 }
 
+interface ClearResponsesAction {
+  type: ActionType.CLEAR_RESPONSES
+}
+
 // Actions Types
 export type SkyfireAction =
   | UpdateSkyfireInfoAction
@@ -56,6 +61,7 @@ export type SkyfireAction =
   | LoadingAction
   | UpdateErrorAction
   | AddResponseAction
+  | ClearResponsesAction
 
 // Actions
 export const updateSkyfireInfo = (data: SkyfireState): SkyfireAction => ({
@@ -97,4 +103,8 @@ export const updateError = (error: AxiosError | null): SkyfireAction => ({
 export const addResponse = (response: AxiosResponse): SkyfireAction => ({
   type: ActionType.ADD_RESPONSE,
   payload: response,
+})
+
+export const clearResponses = (): SkyfireAction => ({
+  type: ActionType.CLEAR_RESPONSES,
 })

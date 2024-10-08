@@ -20,8 +20,12 @@ import { WalletDetailsPanel } from "./tab-balance-details"
 
 interface WalletInterfaceProps {
   aiChatProps: UseChatHelpers
+  errorMessage?: string | null
 }
-export function WalletInterface({ aiChatProps }: WalletInterfaceProps) {
+export function WalletInterface({
+  aiChatProps,
+  errorMessage,
+}: WalletInterfaceProps) {
   const { wallet, balance, claims } = useSkyfireState()
 
   return (
@@ -48,7 +52,10 @@ export function WalletInterface({ aiChatProps }: WalletInterfaceProps) {
             className="h-full data-[state=inactive]:hidden"
           >
             <div className="h-full overflow-y-auto">
-              <AIChatPanel aiChatProps={aiChatProps} />
+              <AIChatPanel
+                aiChatProps={aiChatProps}
+                errorMessage={errorMessage}
+              />
             </div>
           </TabsContent>
         </Tabs>

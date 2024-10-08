@@ -29,6 +29,12 @@ export async function POST(request: Request) {
   )
 
   if (!streamResponse.ok) {
+    if (streamResponse.status === 402) {
+      return NextResponse.json(
+        "Your account balance is too low for this transaction. Please top-up your account to proceed.",
+        { status: streamResponse.status }
+      )
+    }
     return NextResponse.json(
       { message: "API request failed" },
       { status: streamResponse.status }

@@ -37,6 +37,15 @@ interface ChartProps {
   from: string
   to: string
 }
+
+const formatYAxisTick = (value: number) => {
+  // Format the number with 2 decimal places and add commas for thousands
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 export default function MinMaxChart({ title, data, from, to }: ChartProps) {
   const chartData = data
     ? data.map((event: MarketCompAttributes) => ({
@@ -85,7 +94,7 @@ export default function MinMaxChart({ title, data, from, to }: ChartProps) {
                 (dataMin: number) => dataMin - dataMin * 0.05,
                 (dataMax: number) => dataMax + dataMax * 0.05,
               ]}
-              tickFormatter={(value) => `${Math.floor(value)}`}
+              tickFormatter={formatYAxisTick}
             />
             <XAxis
               dataKey="date"

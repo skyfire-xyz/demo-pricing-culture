@@ -35,6 +35,15 @@ interface ChartProps {
   min: string
   numItems: number
 }
+
+const formatYAxisTick = (value: number) => {
+  // Format the number with 2 decimal places and add commas for thousands
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 export default function Chart({ prices, max, min, numItems }: ChartProps) {
   const chartData = prices.map((price, index) => ({ price: Number(price) }))
   const shouldRender = useDelayedRender(5000)
@@ -93,7 +102,11 @@ export default function Chart({ prices, max, min, numItems }: ChartProps) {
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
               />
-              <YAxis type="number" domain={["dataMin", "dataMax"]} />
+              <YAxis
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                tickFormatter={formatYAxisTick}
+              />
             </BarChart>
           </ChartContainer>
         )}
