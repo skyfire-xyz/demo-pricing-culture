@@ -13,6 +13,7 @@ import axios, { AxiosInstance, AxiosResponse, isAxiosError } from "axios"
 import {
   SkyfireAction,
   addResponse,
+  clearResponses,
   loading,
   updateError,
   updateSkyfireAPIKey,
@@ -44,6 +45,7 @@ interface SkyfireContextType {
   apiClient: AxiosInstance | null
   logout: () => void
   pushResponse: (response: AxiosResponse) => void
+  resetResponses: () => void
   getClaimByReferenceID: (referenceId: string | null) => Promise<boolean>
 }
 
@@ -88,11 +90,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
           response.config.metadata?.useWithChat
         ) {
           if (response.config.metadata?.customizeResponseForAIChat) {
-            console.log(
-              response.config.metadata?.customizeResponseForAIChat(response),
-              "response.config.metadata?.customizeResponseForAIChat(response)"
-            )
-
+            resetResponses()
             pushResponse(
               response.config.metadata?.customizeResponseForAIChat(response)
             )
@@ -195,6 +193,10 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
     dispatch(addResponse(response))
   }
 
+  function resetResponses() {
+    dispatch(clearResponses())
+  }
+
   useEffect(() => {
     if (apiClient) {
       fetchUserBalance()
@@ -210,6 +212,7 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
         apiClient,
         logout,
         pushResponse,
+        resetResponses,
         getClaimByReferenceID,
       }}
     >

@@ -56,6 +56,11 @@ export const skyfireReducer = (
         ...state,
         responses: [...state.responses, action.payload],
       }
+    case ActionType.CLEAR_RESPONSES:
+      return {
+        ...state,
+        responses: [],
+      }
     default:
       return state
   }

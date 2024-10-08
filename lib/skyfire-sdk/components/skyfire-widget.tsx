@@ -27,6 +27,7 @@ import { WalletInterface } from "./wallet"
 export default function SkyfireWidget() {
   const { localAPIKey, isReady } = useSkyfireAPIKey()
   const { getClaimByReferenceID } = useSkyfire()
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const aiChatProps = useChat({
     headers: {
       "skyfire-api-key": localAPIKey || "",
@@ -36,6 +37,9 @@ export default function SkyfireWidget() {
         "skyfire-payment-reference-id"
       )
       getClaimByReferenceID(paymentReferenceId)
+    },
+    onError: (error: Error) => {
+      setErrorMessage(error.message || "An error occurred during the chat.")
     },
   })
 
@@ -128,7 +132,10 @@ export default function SkyfireWidget() {
               align="end"
               side="top"
             >
-              <WalletInterface aiChatProps={aiChatProps} />
+              <WalletInterface
+                aiChatProps={aiChatProps}
+                errorMessage={errorMessage}
+              />
             </PopoverContent>
           </Popover>
         )}

@@ -1,10 +1,13 @@
 "use client"
 
 import { use, useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { UseChatHelpers, useChat } from "ai/react"
 import { AxiosResponse } from "axios"
-import { ChevronDown, X } from "lucide-react"
+import { AlertCircle, ChevronDown, X } from "lucide-react"
 
+import { usePricingCulture } from "@/lib/pricing-culture/context"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,7 +21,6 @@ import {
 
 import {
   getItemNamesFromResponse,
-  useSkyfireAPIKey,
   useSkyfireResponses,
 } from "../context/context"
 import { addDatasets } from "../hooks"
@@ -26,11 +28,20 @@ import { MemoizedReactMarkdown } from "./markdown"
 
 interface AIChatPanelProps {
   aiChatProps: UseChatHelpers
+  errorMessage?: string | null
 }
 
-const quickPrompts = ["Can you give me the average prices?"]
+const quickPrompts = [
+  "Can you summarize the data?",
+  "Can you calculate the average price of all items?",
+  "Tell me more about the cheapest item?",
+  "Tell me more about the most expensive item?",
+]
 
-export default function Component({ aiChatProps }: AIChatPanelProps) {
+export default function Component({
+  aiChatProps,
+  errorMessage,
+}: AIChatPanelProps) {
   const {
     messages,
     input,
@@ -40,7 +51,9 @@ export default function Component({ aiChatProps }: AIChatPanelProps) {
     isLoading,
     setInput,
   } = aiChatProps
+  const urlSearchParams = useSearchParams()
 
+  const { selectedComp } = usePricingCulture()
   const responses = useSkyfireResponses()
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -98,8 +111,29 @@ export default function Component({ aiChatProps }: AIChatPanelProps) {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    // Custom Logic For Pricing Culture
+    const customResponse = responses.map((res) => {
+      const initialSelectedTime = urlSearchParams.get("selectedTime")
+      // Filter the objects based on the selected time
+      const filteredObjects = res.data.objects.filter(
+        (obj: any) => obj.event_time == initialSelectedTime
+      )
+      // modify objects
+      filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
+      filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
+      filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
+      return {
+        ...res,
+        data: {
+          ...res.data,
+          objects: filteredObjects[0],
+        },
+      }
+    })
+
     addDatasets(
-      responses.filter((res: AxiosResponse) =>
+      customResponse.filter((res: AxiosResponse) =>
         selectedData.includes(res.config.url || "")
       ),
       messages,
@@ -131,7 +165,7 @@ export default function Component({ aiChatProps }: AIChatPanelProps) {
               <div className="mx-2 p-3 rounded-lg bg-muted max-w-[calc(100%-50px)]">
                 <p className="mb-2">
                   Welcome to the Pricing Culture AI Agent. What can I do for you
-                  {responses.length > 0 ? `or select an option below` : ""}?
+                  {responses.length > 0 ? ` or select an option below` : ""}?
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {responses.map((response) => {
@@ -233,6 +267,13 @@ export default function Component({ aiChatProps }: AIChatPanelProps) {
                 </div>
               </div>
             </div>
+          )}
+          {errorMessage && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
         </div>
         {showScrollButton && (

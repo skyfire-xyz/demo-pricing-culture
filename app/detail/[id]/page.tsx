@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { useSelectedComp } from "@/lib/pricing-culture/context"
 import { formatDateWithoutTime } from "@/lib/utils"
@@ -34,6 +34,7 @@ export default function DetailPage(props: {
 }) {
   const { params, searchParams } = props
   const router = useRouter()
+  const urlSearchParams = useSearchParams()
   const [tab, setTab] = useState("0")
 
   const { data, meta } = useSelectedComp({
@@ -41,6 +42,45 @@ export default function DetailPage(props: {
     from: searchParams.from,
     to: searchParams.to,
   })
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const initialSelectedTime = urlSearchParams.get("selectedTime")
+      if (initialSelectedTime) {
+        const index = data.findIndex(
+          (asset) => asset.event_time === initialSelectedTime
+        )
+        if (index !== -1) {
+          setTab(index.toString())
+        }
+      } else {
+        // Set default to the first event_time if not present in URL
+        const defaultTime = data[0].event_time
+        router.push(
+          `/detail/${params.id}?from=${searchParams.from}&to=${searchParams.to}&selectedTime=${defaultTime}`,
+          { scroll: false }
+        )
+      }
+    }
+  }, [
+    data,
+    urlSearchParams,
+    router,
+    params.id,
+    searchParams.from,
+    searchParams.to,
+  ])
+
+  const handleTabChange = (index: string) => {
+    setTab(index)
+    if (data) {
+      const selectedTime = data[parseInt(index)].event_time
+      router.push(
+        `/detail/${params.id}?from=${searchParams.from}&to=${searchParams.to}&selectedTime=${selectedTime}`,
+        { scroll: false }
+      )
+    }
+  }
 
   if (data) {
     return (
@@ -73,6 +113,7 @@ export default function DetailPage(props: {
                 <img
                   src={meta.params.img_url}
                   className="h-[50px] w-[100px] object-contain"
+                  alt={meta.name}
                 />
               </div>
             )}
@@ -94,7 +135,7 @@ export default function DetailPage(props: {
 
         <Tabs value={tab} className="w-full mt-8 h-auto bg-transparent">
           <div className="flex gap-4 items-center">
-            <Select value={tab} onValueChange={(index) => setTab(`${index}`)}>
+            <Select value={tab} onValueChange={handleTabChange}>
               <SelectTrigger className="md:w-[300px]">
                 <SelectValue placeholder="Select a Event Time" />
               </SelectTrigger>
@@ -102,7 +143,7 @@ export default function DetailPage(props: {
                 <SelectGroup>
                   <SelectLabel>Event Time</SelectLabel>
                   {data.map((asset, index) => (
-                    <SelectItem value={`${index}`}>
+                    <SelectItem key={asset.event_time} value={`${index}`}>
                       {asset.event_time}
                     </SelectItem>
                   ))}
@@ -111,7 +152,7 @@ export default function DetailPage(props: {
             </Select>
           </div>
           {data.map((asset, index) => (
-            <TabsContent value={`${index}`}>
+            <TabsContent key={asset.event_time} value={`${index}`}>
               <Card>
                 <CardContent>
                   <CardTitle className="mt-6">
@@ -149,4 +190,6 @@ export default function DetailPage(props: {
       </section>
     )
   }
+
+  return null
 }
