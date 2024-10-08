@@ -52,10 +52,16 @@ export const skyfireReducer = (
         error: action.payload,
       }
     case ActionType.ADD_RESPONSE:
-      return {
-        ...state,
-        responses: [...state.responses, action.payload],
+      const isDuplicate = state.responses.some(
+        (response) => response.config.url === action.payload.config.url
+      )
+      if (!isDuplicate) {
+        return {
+          ...state,
+          responses: [...state.responses, action.payload],
+        }
       }
+      return state
     case ActionType.CLEAR_RESPONSES:
       return {
         ...state,

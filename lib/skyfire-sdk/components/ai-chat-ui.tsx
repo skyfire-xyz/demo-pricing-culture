@@ -1,12 +1,13 @@
 "use client"
 
-import { use, useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { use, useEffect, useMemo, useRef, useState } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
 import { UseChatHelpers, useChat } from "ai/react"
-import { AxiosResponse } from "axios"
+import { Axios, AxiosResponse } from "axios"
 import { AlertCircle, ChevronDown, X } from "lucide-react"
 
 import { usePricingCulture } from "@/lib/pricing-culture/context"
+import { getUrlParameter } from "@/lib/utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -31,14 +32,6 @@ interface AIChatPanelProps {
   errorMessage?: string | null
 }
 
-const quickPrompts = [
-  "Can you summarize the data?",
-  "What's the average price of the day?",
-  "What are the average prices for each day?",
-  "Tell me more about the cheapest item?",
-  "Tell me more about the most expensive item?",
-]
-
 export default function Component({
   aiChatProps,
   errorMessage,
@@ -53,17 +46,63 @@ export default function Component({
     setInput,
   } = aiChatProps
   const urlSearchParams = useSearchParams()
-
+  const path = usePathname()
   const { selectedComp } = usePricingCulture()
-  const responses = useSkyfireResponses()
+  const responses = useSkyfireResponses(path)
+
+  // Custom Logic For Pricing Culture
+  const customResponse = useMemo(() => {
+    // Custom Logic For Pricing Culture
+    return responses
+      .filter((res) => {
+        if (path.includes("/detail/")) {
+          return (
+            path.split("/detail/")[1] ==
+            getUrlParameter(res.request.responseURL, "id")
+          )
+        }
+        return true
+      })
+      .map((res) => {
+        if (path.includes("/detail/")) {
+          const initialSelectedTime = urlSearchParams.get("selectedTime")
+          // Filter the objects based on the selected time
+          const filteredObjects = res.data.objects.filter(
+            (obj: any) => obj.event_time == initialSelectedTime
+          )
+          if (filteredObjects.length === 0) return res
+          // modify objects
+          filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
+          filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
+          filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
+          filteredObjects[0].averagePriceOfAllDates = res.data.objects.map(
+            (obj: any) => ({
+              date: obj.event_time,
+              averagePrice: obj.value_average,
+            })
+          )
+          return {
+            ...res,
+            data: {
+              ...res.data,
+              objects: filteredObjects[0],
+            },
+          }
+        }
+        return res
+      })
+  }, [responses])
+
+  const quickPrompts = useMemo(() => {
+    return customResponse.reduce((arr: string[], res: AxiosResponse) => {
+      return [...arr, ...(res.config.metadataForAgent?.customPrompts || [])]
+    }, [])
+  }, [customResponse])
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [showQuickPrompts, setShowQuickPrompts] = useState(true)
-  const [selectedData, setSelectedData] = useState<string[]>(
-    responses.map((res) => res.config.url || "")
-  )
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -94,58 +133,20 @@ export default function Component({
   }, [])
 
   useEffect(() => {
-    setSelectedData(responses.map((res) => res.config.url || ""))
-  }, [responses])
+    return () => {
+      setMessages([])
+    }
+  }, [])
 
   const handleQuickPrompt = (prompt: string) => {
     setInput(prompt)
     setShowQuickPrompts(false)
   }
 
-  const handleDataToggle = (dataId: string) => {
-    setSelectedData((prev) =>
-      prev.includes(dataId)
-        ? prev.filter((id) => id !== dataId)
-        : [...prev, dataId]
-    )
-  }
-
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Custom Logic For Pricing Culture
-    const customResponse = responses.map((res) => {
-      const initialSelectedTime = urlSearchParams.get("selectedTime")
-      // Filter the objects based on the selected time
-      const filteredObjects = res.data.objects.filter(
-        (obj: any) => obj.event_time == initialSelectedTime
-      )
-      // modify objects
-      filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
-      filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
-      filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
-      filteredObjects[0].averagePriceOfAllDates = res.data.objects.map(
-        (obj: any) => ({
-          date: obj.event_time,
-          averagePrice: obj.value_average,
-        })
-      )
-      return {
-        ...res,
-        data: {
-          ...res.data,
-          objects: filteredObjects[0],
-        },
-      }
-    })
-
-    addDatasets(
-      customResponse.filter((res: AxiosResponse) =>
-        selectedData.includes(res.config.url || "")
-      ),
-      messages,
-      setMessages
-    )
+    addDatasets(customResponse, messages, setMessages)
 
     handleSubmit(e)
   }
@@ -172,18 +173,19 @@ export default function Component({
               <div className="mx-2 p-3 rounded-lg bg-muted max-w-[calc(100%-50px)]">
                 <p className="mb-2">
                   Welcome to the Pricing Culture AI Agent. What can I do for you
-                  {responses.length > 0 ? ` or select an option below` : ""}?
+                  {customResponse.length > 0
+                    ? ` or select an option below`
+                    : ""}
+                  ?
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {responses.map((response) => {
+                  {customResponse.map((response) => {
                     const url = response.config.url
                     if (!url) return null
                     return (
                       <Badge
                         key={response.config.url}
-                        variant={
-                          selectedData.includes(url) ? "default" : "outline"
-                        }
+                        variant="default"
                         className="cursor-pointer"
                         // onClick={() => handleDataToggle(url)}
                       >
@@ -295,20 +297,18 @@ export default function Component({
       </CardContent>
       <CardFooter className="p-4 flex-shrink-0">
         <div className="w-full space-y-4">
-          {selectedData.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {quickPrompts.map((prompt, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickPrompt(prompt)}
-                >
-                  {prompt}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {quickPrompts.map((prompt, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickPrompt(prompt)}
+              >
+                {prompt}
+              </Button>
+            ))}
+          </div>
           <form onSubmit={handleFormSubmit} className="flex gap-2 w-full">
             <input
               className="flex-grow max-w-md p-2 border rounded bg-white"

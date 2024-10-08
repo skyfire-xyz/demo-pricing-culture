@@ -4,6 +4,7 @@ import * as React from "react"
 import { Bar, BarChart, CartesianGrid, YAxis } from "recharts"
 
 import { formatPrice } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -17,8 +18,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-
-import { useDelayedRender } from "../hooks/use-delayed-render"
 
 export const description = "An interactive bar chart"
 
@@ -37,7 +36,6 @@ interface ChartProps {
 }
 
 const formatYAxisTick = (value: number) => {
-  // Format the number with 2 decimal places and add commas for thousands
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -45,8 +43,13 @@ const formatYAxisTick = (value: number) => {
 }
 
 export default function Chart({ prices, max, min, numItems }: ChartProps) {
-  const chartData = prices.map((price, index) => ({ price: Number(price) }))
-  const shouldRender = useDelayedRender(5000)
+  const [showChart, setShowChart] = React.useState(false)
+  const [chartData, setChartData] = React.useState<{ price: number }[]>([])
+
+  const loadChartData = () => {
+    setShowChart(true)
+    setChartData(prices.map((price) => ({ price: Number(price) })))
+  }
 
   return (
     <Card className="mt-6">
@@ -82,34 +85,41 @@ export default function Chart({ prices, max, min, numItems }: ChartProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-2 sm:p-6">
-        {shouldRender && (
-          <ChartContainer
-            config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
-          >
-            <BarChart
-              accessibilityLayer
-              data={chartData}
-              margin={{
-                left: 12,
-                right: 12,
-              }}
-            >
-              <Bar dataKey="price" type="natural" fill="var(--color-price)" />
-              <CartesianGrid vertical={false} />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <YAxis
-                type="number"
-                domain={["dataMin", "dataMax"]}
-                tickFormatter={formatYAxisTick}
-              />
-            </BarChart>
-          </ChartContainer>
+      <CardContent className="px-2 sm:p-6 relative">
+        {!showChart && (
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 h-full">
+            <div className="h-full flex items-center">
+              <Button onClick={loadChartData} disabled={showChart}>
+                Show Chart
+              </Button>
+            </div>
+          </div>
         )}
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[250px] w-full"
+        >
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <Bar dataKey="price" type="natural" fill="var(--color-price)" />
+            <CartesianGrid vertical={false} />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <YAxis
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              tickFormatter={formatYAxisTick}
+            />
+          </BarChart>
+        </ChartContainer>
       </CardContent>
     </Card>
   )
