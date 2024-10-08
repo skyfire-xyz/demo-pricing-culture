@@ -169,14 +169,6 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
       const res = await apiClient.get(
         `v1/wallet/claimByReferenceId/${referenceId}`
       )
-
-      if (res.status < 400) {
-        toast({
-          title: `Spent ${usdAmount(res.data.value)}`,
-          duration: 3000,
-        })
-        return true
-      }
     } catch (error) {
       console.error("Error fetching claim:", error)
     }
