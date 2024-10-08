@@ -1,10 +1,10 @@
 "use client"
 
-import { use, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
-import { UseChatHelpers, useChat } from "ai/react"
-import { Axios, AxiosResponse } from "axios"
-import { AlertCircle, ChevronDown, X } from "lucide-react"
+import { UseChatHelpers } from "ai/react"
+import { AxiosResponse } from "axios"
+import { AlertCircle, ChevronDown } from "lucide-react"
 
 import { usePricingCulture } from "@/lib/pricing-culture/context"
 import { getUrlParameter } from "@/lib/utils"
@@ -43,16 +43,13 @@ export default function Component({
     handleSubmit,
     setMessages,
     isLoading,
-    setInput,
   } = aiChatProps
   const urlSearchParams = useSearchParams()
   const path = usePathname()
   const { selectedComp } = usePricingCulture()
   const responses = useSkyfireResponses(path)
 
-  // Custom Logic For Pricing Culture
   const customResponse = useMemo(() => {
-    // Custom Logic For Pricing Culture
     return responses
       .filter((res) => {
         if (path.includes("/detail/")) {
@@ -66,12 +63,10 @@ export default function Component({
       .map((res) => {
         if (path.includes("/detail/")) {
           const initialSelectedTime = urlSearchParams.get("selectedTime")
-          // Filter the objects based on the selected time
           const filteredObjects = res.data.objects.filter(
             (obj: any) => obj.event_time == initialSelectedTime
           )
           if (filteredObjects.length === 0) return res
-          // modify objects
           filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
           filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
           filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
@@ -91,7 +86,7 @@ export default function Component({
         }
         return res
       })
-  }, [responses])
+  }, [responses, path, urlSearchParams])
 
   const quickPrompts = useMemo(() => {
     return customResponse.reduce((arr: string[], res: AxiosResponse) => {
@@ -101,6 +96,7 @@ export default function Component({
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [showQuickPrompts, setShowQuickPrompts] = useState(true)
 
@@ -136,19 +132,25 @@ export default function Component({
     return () => {
       setMessages([])
     }
-  }, [])
+  }, [setMessages])
 
-  const handleQuickPrompt = (prompt: string) => {
-    setInput(prompt)
-    setShowQuickPrompts(false)
+  const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    addDatasets(customResponse, messages, setMessages)
+    handleSubmit(e)
   }
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    addDatasets(customResponse, messages, setMessages)
-
-    handleSubmit(e)
+  const handleQuickPrompt = (prompt: string) => {
+    const event = {
+      target: { value: prompt },
+    } as React.ChangeEvent<HTMLInputElement>
+    handleInputChange(event)
+    setShowQuickPrompts(false)
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.requestSubmit()
+      }
+    }, 0)
   }
 
   return (
@@ -187,18 +189,8 @@ export default function Component({
                         key={response.config.url}
                         variant="default"
                         className="cursor-pointer"
-                        // onClick={() => handleDataToggle(url)}
                       >
                         {getItemNamesFromResponse(response)}
-                        {/* {selectedData.includes(url) && (
-                          <X
-                            className="w-3 h-3 ml-1"
-                            onClick={(e: Event) => {
-                              e.stopPropagation()
-                              handleDataToggle(url)
-                            }}
-                          />
-                        )} */}
                       </Badge>
                     )
                   })}
@@ -309,7 +301,11 @@ export default function Component({
               </Button>
             ))}
           </div>
-          <form onSubmit={handleFormSubmit} className="flex gap-2 w-full">
+          <form
+            ref={formRef}
+            onSubmit={submitForm}
+            className="flex gap-2 w-full"
+          >
             <input
               className="flex-grow max-w-md p-2 border rounded bg-white"
               value={input}
