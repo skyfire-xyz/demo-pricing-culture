@@ -33,7 +33,8 @@ interface AIChatPanelProps {
 
 const quickPrompts = [
   "Can you summarize the data?",
-  "Can you calculate the average price of all items?",
+  "What's the average price of the day?",
+  "What are the average prices for each day?",
   "Tell me more about the cheapest item?",
   "Tell me more about the most expensive item?",
 ]
@@ -123,6 +124,12 @@ export default function Component({
       filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
       filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
       filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
+      filteredObjects[0].averagePriceOfAllDates = res.data.objects.map(
+        (obj: any) => ({
+          date: obj.event_time,
+          averagePrice: obj.value_average,
+        })
+      )
       return {
         ...res,
         data: {
