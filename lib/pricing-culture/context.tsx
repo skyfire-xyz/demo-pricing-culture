@@ -47,8 +47,11 @@ export const PricingCultureProvider: React.FC<{
         const response = await client.get(
           `/proxy/pricing-culture/api/data/dailycomps`,
           {
-            metadata: {
+            metadataForAgent: {
               title: `Daily Comps`,
+              useWithChat: true,
+              correspondingPageURLs: ["/"],
+              customPrompts: ["Can you give me the list of luxury goods?"],
             },
           }
         )
@@ -70,10 +73,11 @@ export const PricingCultureProvider: React.FC<{
       const response = await client.get(
         `/proxy/pricing-culture/api/data/dailycomps/snapshot?id=${id}&start_time=${from}&end_time=${to}`,
         {
-          metadata: {
+          metadataForAgent: {
             title: `Snapshots between ${from} to ${to}`,
             useWithChat: true,
-            customizeResponseForAIChat: (response) => {
+            correspondingPageURLs: ["/detail/[id]"],
+            customizeResponse: (response) => {
               const customizedObjects = response.data.objects.map(
                 (arr: any) => {
                   return {
@@ -90,6 +94,13 @@ export const PricingCultureProvider: React.FC<{
                 },
               }
             },
+            customPrompts: [
+              "Can you summarize the data?",
+              "What's the average price of the day?",
+              "What are the average prices for each day?",
+              "Tell me more about the cheapest item?",
+              "Tell me more about the most expensive item?",
+            ],
           },
         }
       )

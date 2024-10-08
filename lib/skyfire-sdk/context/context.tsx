@@ -32,10 +32,12 @@ import { SkyfireState } from "./type"
 
 declare module "axios" {
   export interface AxiosRequestConfig {
-    metadata?: {
+    metadataForAgent?: {
       title?: string
       useWithChat?: boolean
-      customizeResponseForAIChat?: (response: AxiosResponse) => AxiosResponse
+      correspondingPageURLs: string[]
+      customizeResponse?: (response: AxiosResponse) => AxiosResponse
+      customPrompts: string[]
     }
   }
 }
@@ -51,7 +53,7 @@ interface SkyfireContextType {
 
 export const getItemNamesFromResponse = (response: AxiosResponse): string => {
   const config = response.config
-  const title = config.metadata?.title || config.url || "Unknown"
+  const title = config.metadataForAgent?.title || config.url || "Unknown"
   return title
 }
 
@@ -87,12 +89,11 @@ export const SkyfireProvider: React.FC<{ children: ReactNode }> = ({
       async (response) => {
         if (
           response.config.url?.includes("proxy") &&
-          response.config.metadata?.useWithChat
+          response.config.metadataForAgent?.useWithChat
         ) {
-          if (response.config.metadata?.customizeResponseForAIChat) {
-            resetResponses()
+          if (response.config.metadataForAgent?.customizeResponse) {
             pushResponse(
-              response.config.metadata?.customizeResponseForAIChat(response)
+              response.config.metadataForAgent?.customizeResponse(response)
             )
           } else {
             pushResponse(response)
@@ -249,7 +250,29 @@ export const useLoadingState = () => {
   return state?.loading
 }
 
-export const useSkyfireResponses = () => {
+export const useSkyfireResponses = (pathname: string) => {
   const { state } = useSkyfire()
+  if (state?.responses.length > 0) {
+    return filterResponsesByUrl(state?.responses, pathname)
+  }
   return state?.responses
+}
+
+function isUrlMatch(pathname: string, urlPatterns: string[]): boolean {
+  return urlPatterns.some((pattern) => {
+    // Convert the URL pattern to a regex
+    const regexPattern = pattern.replace(/\[.*?\]/g, "[^/]+")
+    const regex = new RegExp(`^${regexPattern}$`)
+    return regex.test(pathname)
+  })
+}
+
+function filterResponsesByUrl(
+  responses: AxiosResponse[],
+  pathname: string
+): AxiosResponse[] {
+  return responses.filter((response) => {
+    const urls = response.config.metadataForAgent?.correspondingPageURLs || []
+    return isUrlMatch(pathname, urls)
+  })
 }

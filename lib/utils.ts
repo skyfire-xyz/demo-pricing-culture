@@ -48,3 +48,23 @@ export function formatDateWithoutTime(dateString: string): string {
     return "Invalid date format"
   }
 }
+
+/**
+ * Extracts the value of a specified parameter from a URL string
+ * @param url The full URL string
+ * @param param The name of the parameter to extract
+ * @returns The value of the specified parameter, or null if not found
+ */
+export function getUrlParameter(
+  url: string | undefined,
+  param: string
+): string | null {
+  try {
+    const urlObject = new URL(url || "")
+    const searchParams = new URLSearchParams(urlObject.search)
+    return searchParams.get(param)
+  } catch (error) {
+    console.error("Invalid URL:", error)
+    return null
+  }
+}

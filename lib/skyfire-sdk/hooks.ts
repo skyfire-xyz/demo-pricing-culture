@@ -32,7 +32,8 @@ export function formatReponseToChatSystemData(
     id: messageId,
     role: "system",
     content: `${
-      response.config.metadata?.title || `Response from ${response.config.url}`
+      response.config.metadataForAgent?.title ||
+      `Response from ${response.config.url}`
     } attached.`,
   }
 
@@ -41,7 +42,7 @@ export function formatReponseToChatSystemData(
       id: `${messageId}-chunk-0`,
       role: "system",
       content: `<Chunk>This is the JSON data from the API "${
-        response.config.metadata?.title || ""
+        response.config.metadataForAgent?.title || ""
       }" response ${
         response.config.url
       }. Please answer my questions based on this data [Data]"${JSON.stringify(
