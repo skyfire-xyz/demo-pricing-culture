@@ -1,38 +1,31 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { UseChatHelpers } from "ai/react"
 import { AxiosResponse } from "axios"
 import { AlertCircle, ChevronDown } from "lucide-react"
 
-import { usePricingCulture } from "@/lib/pricing-culture/context"
-import { getUrlParameter } from "@/lib/utils"
+import {
+  getItemNamesFromResponse,
+  useSkyfireResponses,
+} from "@/lib/skyfire-sdk/context/context"
+import { addDatasets } from "@/lib/skyfire-sdk/hooks"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 
-import {
-  getItemNamesFromResponse,
-  useSkyfireResponses,
-} from "../context/context"
-import { addDatasets } from "../hooks"
-import { MemoizedReactMarkdown } from "./markdown"
+import ChatBlob from "./chat-blob"
+import { ComposeEmailTool, SendEmailTool, ShowImagesTool } from "./tools"
 
 interface AIChatPanelProps {
   aiChatProps: UseChatHelpers
   errorMessage?: string | null
 }
 
-export default function Component({
+export default function AIChatUI({
   aiChatProps,
   errorMessage,
 }: AIChatPanelProps) {
@@ -43,60 +36,23 @@ export default function Component({
     handleSubmit,
     setMessages,
     isLoading,
+    setInput,
   } = aiChatProps
-  const urlSearchParams = useSearchParams()
   const path = usePathname()
-  const { selectedComp } = usePricingCulture()
   const responses = useSkyfireResponses(path)
-
-  const customResponse = useMemo(() => {
-    return responses
-      .filter((res) => {
-        if (path.includes("/detail/")) {
-          return (
-            path.split("/detail/")[1] ==
-            getUrlParameter(res.request.responseURL, "id")
-          )
-        }
-        return true
-      })
-      .map((res) => {
-        if (path.includes("/detail/")) {
-          const initialSelectedTime = urlSearchParams.get("selectedTime")
-          const filteredObjects = res.data.objects.filter(
-            (obj: any) => obj.event_time == initialSelectedTime
-          )
-          if (filteredObjects.length === 0) return res
-          filteredObjects[0].snapshotDateAndTime = filteredObjects[0].event_time
-          filteredObjects[0].minPriceItem = filteredObjects[0].value_min_asset
-          filteredObjects[0].maxPriceItem = filteredObjects[0].value_max_asset
-          filteredObjects[0].averagePriceOfAllDates = res.data.objects.map(
-            (obj: any) => ({
-              date: obj.event_time,
-              averagePrice: obj.value_average,
-            })
-          )
-          return {
-            ...res,
-            data: {
-              ...res.data,
-              objects: filteredObjects[0],
-            },
-          }
-        }
-        return res
-      })
-  }, [responses, path, urlSearchParams])
+  const formRef = useRef<HTMLFormElement>(null)
 
   const quickPrompts = useMemo(() => {
-    return customResponse.reduce((arr: string[], res: AxiosResponse) => {
-      return [...arr, ...(res.config.metadataForAgent?.customPrompts || [])]
-    }, [])
-  }, [customResponse])
+    if (!responses || responses.length === 0) return new Set<string>()
+    return new Set<string>(
+      responses.reduce((arr: string[], res: AxiosResponse) => {
+        return [...arr, ...(res.config.metadataForAgent?.customPrompts || [])]
+      }, [])
+    )
+  }, [responses])
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const formRef = useRef<HTMLFormElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [showQuickPrompts, setShowQuickPrompts] = useState(true)
 
@@ -128,24 +84,11 @@ export default function Component({
     }
   }, [])
 
-  useEffect(() => {
-    return () => {
-      setMessages([])
-    }
-  }, [setMessages])
-
-  const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    addDatasets(customResponse, messages, setMessages)
-    handleSubmit(e)
-  }
-
-  const handleQuickPrompt = (prompt: string) => {
+  const handleManualSubmit = (prompt: string) => {
     const event = {
       target: { value: prompt },
     } as React.ChangeEvent<HTMLInputElement>
     handleInputChange(event)
-    setShowQuickPrompts(false)
     setTimeout(() => {
       if (formRef.current) {
         formRef.current.requestSubmit()
@@ -153,14 +96,28 @@ export default function Component({
     }, 0)
   }
 
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    addDatasets(responses, messages, setMessages)
+    handleSubmit(e)
+  }
+
+  const filteredMessages = messages.filter((message) => {
+    if (
+      (message.role === "user" &&
+        (message.content.startsWith("<Data>") ||
+          message.content.startsWith("<Email>"))) ||
+      message.id === "instruction"
+    )
+      return false
+    return true
+  })
+
   return (
     <Card
       className="w-full mx-auto flex flex-col h-[calc(100vh-380px)]"
       ref={cardRef}
     >
-      <CardHeader className="flex-shrink-0">
-        <CardTitle>AI Agent</CardTitle>
-      </CardHeader>
       <CardContent className="flex-grow overflow-hidden p-0 relative">
         <div
           ref={chatContainerRef}
@@ -174,14 +131,11 @@ export default function Component({
               </Avatar>
               <div className="mx-2 p-3 rounded-lg bg-muted max-w-[calc(100%-50px)]">
                 <p className="mb-2">
-                  Welcome to the Pricing Culture AI Agent. What can I do for you
-                  {customResponse.length > 0
-                    ? ` or select an option below`
-                    : ""}
-                  ?
+                  Welcome to the Getty Images AI Agent. What can I do for you
+                  {responses.length > 0 ? ` or select an option below` : ""}?
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {customResponse.map((response) => {
+                  {responses.map((response) => {
                     const url = response.config.url
                     if (!url) return null
                     return (
@@ -198,58 +152,59 @@ export default function Component({
               </div>
             </div>
           </div>
-          {messages
-            .filter((message) => {
-              if (
-                message.role === "system" &&
-                message.content.startsWith("<Chunk>")
-              )
-                return false
-              return true
-            })
-            .map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                } mb-4`}
-              >
-                <div
-                  className={`flex max-w-[100%] ${
-                    message.role === "user" ? "flex-row-reverse" : "flex-row"
-                  } items-start`}
-                >
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarFallback>
-                      {message.role === "user" ? "U" : "AI"}
-                    </AvatarFallback>
-                    <AvatarImage
-                      src={
-                        message.role === "user"
-                          ? "/user-avatar.png"
-                          : "/ai-avatar.png"
-                      }
-                      alt={
-                        message.role === "user" ? "User Avatar" : "AI Avatar"
-                      }
-                    />
-                  </Avatar>
-                  <div
-                    className={`mx-2 p-3 rounded-lg ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "max-w-[calc(100%-50px)] bg-muted"
-                    } break-words`}
-                  >
-                    <MemoizedReactMarkdown>
-                      {message.role === "system"
-                        ? message.content.split("<data-response>")[0]
-                        : message.content}
-                    </MemoizedReactMarkdown>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {filteredMessages.map((message, index) => {
+            return (
+              <>
+                <ChatBlob message={message} />
+                {message.toolInvocations?.map((tool) => {
+                  if (tool.toolName === ShowImagesTool.toolName) {
+                    return (
+                      <ShowImagesTool.ClientComponent
+                        images={tool.args.images}
+                      />
+                    )
+                  } else if (tool.toolName === ComposeEmailTool.toolName) {
+                    return (
+                      <ComposeEmailTool.ClientComponent
+                        initialData={{
+                          to: tool.args.to,
+                          subject: tool.args.subject,
+                          body: tool.args.body,
+                        }}
+                        disabled={index !== filteredMessages.length - 1}
+                        onSubmit={async (args: {
+                          to: string
+                          subject: string
+                          body: string
+                        }) => {
+                          setMessages([
+                            ...messages,
+                            {
+                              id: `send_email_${index}`,
+                              role: "user",
+                              content: `<Email>${JSON.stringify(args)}`,
+                            },
+                          ])
+                          handleManualSubmit(`Email to ${args.to}`)
+                        }}
+                        onCancel={() => {
+                          console.log("cancel")
+                        }}
+                      />
+                    )
+                  } else if (tool.toolName === SendEmailTool.toolName) {
+                    if (tool.state === "result" && tool.result) {
+                      return (
+                        <SendEmailTool.ClientComponent
+                          result={JSON.parse(tool.result.content)}
+                        />
+                      )
+                    }
+                  }
+                })}
+              </>
+            )
+          })}
           {isLoading && (
             <div className="flex justify-start items-start mb-4">
               <div className="flex items-start">
@@ -290,12 +245,15 @@ export default function Component({
       <CardFooter className="p-4 flex-shrink-0">
         <div className="w-full space-y-4">
           <div className="flex flex-wrap gap-2">
-            {quickPrompts.map((prompt, index) => (
+            {[...quickPrompts].map((prompt, index) => (
               <Button
                 key={index}
                 variant="outline"
                 size="sm"
-                onClick={() => handleQuickPrompt(prompt)}
+                onClick={() => {
+                  setShowQuickPrompts(false)
+                  handleManualSubmit(prompt)
+                }}
               >
                 {prompt}
               </Button>
@@ -303,16 +261,20 @@ export default function Component({
           </div>
           <form
             ref={formRef}
-            onSubmit={submitForm}
-            className="flex gap-2 w-full"
+            onSubmit={handleFormSubmit}
+            className="flex gap-2 w-full items-center"
           >
             <input
-              className="flex-grow max-w-md p-2 border rounded bg-white"
+              className="flex-grow p-4 border rounded-lg bg-white text-black"
               value={input}
-              placeholder="Ask about the selected datasets..."
+              placeholder="Ask something"
               onChange={handleInputChange}
             />
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="rounded-lg h-full p-4"
+            >
               Send
             </Button>
           </form>

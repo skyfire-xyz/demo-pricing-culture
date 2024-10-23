@@ -1,20 +1,48 @@
-## Quick Start
+## Skyfire Widget Migration Note
 
-1. **Clone the repository:**
+### Install Skyfire Widget
 
-   ```bash
-   git clone git@github.com:skyfire-xyz/demo-micro1.git
-   ```
+#### Add Privider to the app
 
-2. **Install dependencies:**
+```
+import SkyfireWidget from "@/lib/skyfire-sdk/components/skyfire-widget"
+import { SkyfireProvider } from "@/lib/skyfire-sdk/context/context"
 
-   ```bash
-   yarn install
-   ```
+<SkyfireProvider>
+   <YourAppProvider>
+      <div className="relative flex min-h-screen flex-col pb-20">
+      <SiteHeader />
+      <SkyfireWidget />
+      <div className="flex-1">{children}</div>
+      </div>
+      <TailwindIndicator />
+   </YourAppProvider>
+</SkyfireProvider>
 
-3. **Run the development server:**
-   ```bash
-   yarn dev
-   ```
+```
 
-Your Next.js app should now be running on `http://localhost:3000`.
+#### Add API route for proxy call
+
+```
+api/chat/route.ts
+```
+
+### Shadcn dependencies
+
+```
+npx shadcn@latest add alert avatar badge card form input scroll-area table tooltip dialog popover tabs toast
+```
+
+### NPM dependencies
+
+```
+yarn add @hookform/resolvers react-hook-form zod framer-motion react-markdown ai axios
+```
+
+### Tailwind config
+
+```
+content: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}"],
+```
+
+### Set Environment variable

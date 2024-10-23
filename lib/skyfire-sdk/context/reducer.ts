@@ -12,6 +12,7 @@ export const initialState: SkyfireState = {
   loading: false,
   error: null,
   responses: [],
+  tosAgreed: false,
 }
 
 export const skyfireReducer = (
@@ -62,10 +63,35 @@ export const skyfireReducer = (
         }
       }
       return state
+    case ActionType.REPLACE_RESPONSE:
+      const existingResponseIndex = state.responses.findIndex(
+        (resp) =>
+          resp.config.metadataForAgent?.title ===
+          action.payload.config.metadataForAgent?.title
+      )
+      if (existingResponseIndex !== -1) {
+        return {
+          ...state,
+          responses: state.responses.map((resp, index) =>
+            index === existingResponseIndex ? action.payload : resp
+          ),
+        }
+      } else {
+        return {
+          ...state,
+          responses: [...state.responses, action.payload],
+        }
+      }
     case ActionType.CLEAR_RESPONSES:
       return {
         ...state,
         responses: [],
+      }
+    case ActionType.UPDATE_TOS_AGREEMENT:
+      localStorage.setItem("tosAgreed", JSON.stringify(action.payload))
+      return {
+        ...state,
+        tosAgreed: action.payload,
       }
     default:
       return state

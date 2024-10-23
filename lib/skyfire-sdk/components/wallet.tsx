@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+import AIChatPanel from "../ai-agent/ai-chat-ui"
 import { updateSkyfireAPIKey } from "../context/action"
 import { useSkyfire, useSkyfireState } from "../context/context"
 import { usdAmount } from "../util"
-import AIChatPanel from "./ai-chat-ui"
 import { ClaimsWidget } from "./claims"
 import LogoutButton from "./logout"
 import { WalletDetailsPanel } from "./tab-balance-details"
@@ -29,7 +29,7 @@ export function WalletInterface({
   const { wallet, balance, claims } = useSkyfireState()
 
   return (
-    <Card className="skyfire-theme max-w-full h-[calc(100vh-200px)] flex flex-col">
+    <Card className="skyfire-theme md:max-w-full h-[calc(100vh-200px)] flex flex-col">
       <CardHeader>
         <CardTitle>{usdAmount(balance?.escrow.available || "0")}</CardTitle>
         <CardDescription>{wallet?.walletAddress}</CardDescription>
@@ -38,6 +38,7 @@ export function WalletInterface({
         <Tabs defaultValue="wallet-info" className="h-full">
           <TabsList className="">
             <TabsTrigger value="wallet-info">Wallet Details</TabsTrigger>
+            <TabsTrigger value="claims">Claims</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
           <TabsContent
@@ -45,6 +46,11 @@ export function WalletInterface({
             className="h-[calc(100%-50px)] flex flex-col gap-6 data-[state=inactive]:hidden"
           >
             <WalletDetailsPanel wallet={wallet} balance={balance} />
+          </TabsContent>
+          <TabsContent
+            value="claims"
+            className="h-[calc(100%-50px)] flex flex-col gap-6 data-[state=inactive]:hidden"
+          >
             <ClaimsWidget claims={claims || []} />
           </TabsContent>
           <TabsContent
