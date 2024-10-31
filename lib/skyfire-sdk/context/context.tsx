@@ -362,7 +362,6 @@ export const useSkyfireRules = () => {
 
 export const useSkyfireRuleById = (ruleId: string) => {
   const { state } = useSkyfire()
-  console.log(state, "state?.rules")
   return state?.rules.find((rule) => rule.id === ruleId)
 }
 
