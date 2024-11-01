@@ -23,7 +23,10 @@ import { ComposeEmailTool, SendEmailTool, ShowImagesTool } from "./tools"
 
 interface AIChatPanelProps {
   aiChatProps: UseChatHelpers
-  errorMessage?: string | null
+  errorMessage?: {
+    message: string
+    data: any
+  } | null
 }
 
 export default function AIChatUI({
